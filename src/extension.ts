@@ -10,7 +10,7 @@ import {
 
 import { AnsiDecorationProvider } from "./AnsiDecorationProvider";
 import { EditorRedrawWatcher } from "./EditorRedrawWatcher";
-import { PrettyAnsiContentProvider } from "./PrettyAnsiContentProvider";
+import { AnsiContentPreviewProvider } from "./AnsiContentPreviewProvider";
 import {
   executeRegisteredTextEditorDecorationProviders,
   registerTextEditorDecorationProvider,
@@ -22,30 +22,30 @@ export async function activate(context: ExtensionContext): Promise<void> {
   const editorRedrawWatcher = new EditorRedrawWatcher();
   context.subscriptions.push(editorRedrawWatcher);
 
-  const prettyAnsiContentProvider = new PrettyAnsiContentProvider(editorRedrawWatcher);
-  context.subscriptions.push(prettyAnsiContentProvider);
+  const ansiContentPreviewProvider = new AnsiContentPreviewProvider(editorRedrawWatcher);
+  context.subscriptions.push(ansiContentPreviewProvider);
 
   context.subscriptions.push(
-    workspace.registerTextDocumentContentProvider(PrettyAnsiContentProvider.scheme, prettyAnsiContentProvider)
+    workspace.registerTextDocumentContentProvider(AnsiContentPreviewProvider.scheme, ansiContentPreviewProvider)
   );
 
-  const showPretty = async (options?: TextDocumentShowOptions) => {
+  const showPreview = async (options?: TextDocumentShowOptions) => {
     const actualUri = window.activeTextEditor?.document.uri;
 
     if (!actualUri) {
       return;
     }
 
-    const providerUri = PrettyAnsiContentProvider.toProviderUri(actualUri);
+    const providerUri = AnsiContentPreviewProvider.toProviderUri(actualUri);
 
     await window.showTextDocument(providerUri, options);
   };
 
   context.subscriptions.push(
-    commands.registerCommand(`${extensionId}.showPretty`, () => showPretty({ viewColumn: ViewColumn.Active }))
+    commands.registerCommand(`${extensionId}.showPreview`, () => showPreview({ viewColumn: ViewColumn.Active }))
   );
   context.subscriptions.push(
-    commands.registerCommand(`${extensionId}.showPrettyToSide`, () => showPretty({ viewColumn: ViewColumn.Beside }))
+    commands.registerCommand(`${extensionId}.showPreviewToSide`, () => showPreview({ viewColumn: ViewColumn.Beside }))
   );
 
   const ansiDecorationProvider = new AnsiDecorationProvider();

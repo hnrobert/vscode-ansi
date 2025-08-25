@@ -1,7 +1,7 @@
 import { TextDocument, ProviderResult, TextEditorDecorationType, window, Range, workspace, ThemeColor } from "vscode";
 
 import * as ansi from "./ansi";
-import { PrettyAnsiContentProvider } from "./PrettyAnsiContentProvider";
+import { AnsiContentPreviewProvider } from "./AnsiContentPreviewProvider";
 import { TextEditorDecorationProvider } from "./TextEditorDecorationProvider";
 
 function upsert<K, V>(map: Map<K, V>, key: K, value: V): V {
@@ -53,7 +53,7 @@ function convertColor(color: ansi.Color, explicitDefaults: boolean): ThemeColor 
 
 export class AnsiDecorationProvider implements TextEditorDecorationProvider {
   provideDecorationRanges(document: TextDocument): ProviderResult<[string, Range[]][]> {
-    if (document.uri.scheme === PrettyAnsiContentProvider.scheme) {
+    if (document.uri.scheme === AnsiContentPreviewProvider.scheme) {
       return this._provideDecorationsForPrettifiedAnsi(document);
     }
 
@@ -97,7 +97,7 @@ export class AnsiDecorationProvider implements TextEditorDecorationProvider {
   }
 
   private async _provideDecorationsForPrettifiedAnsi(providerDocument: TextDocument): Promise<[string, Range[]][]> {
-    const actualUri = PrettyAnsiContentProvider.toActualUri(providerDocument.uri);
+    const actualUri = AnsiContentPreviewProvider.toActualUri(providerDocument.uri);
     const actualDocument = await workspace.openTextDocument(actualUri);
 
     const result = new Map<string, Range[]>();

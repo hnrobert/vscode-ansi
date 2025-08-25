@@ -32,13 +32,13 @@
   "contributes": {
     "commands": [
       {
-        "command": "HNRobert.vscode-ansi.showPretty",
+        "command": "HNRobert.vscode-ansi.showPreview",
         "title": "Open Preview",
         "category": "ANSI Text",
         "icon": "$(open-preview)"
       },
       {
-        "command": "HNRobert.vscode-ansi.showPrettyToSide",
+        "command": "HNRobert.vscode-ansi.showPreviewToSide",
         "title": "Open Preview to the Side",
         "category": "ANSI Text",
         "icon": "$(open-preview)"
@@ -47,8 +47,8 @@
     "menus": {
       "editor/title": [
         {
-          "command": "HNRobert.vscode-ansi.showPrettyToSide",
-          "alt": "HNRobert.vscode-ansi.showPretty",
+          "command": "HNRobert.vscode-ansi.showPreviewToSide",
+          "alt": "HNRobert.vscode-ansi.showPreview",
           "when": "editorLangId == ansi",
           "group": "navigation"
         }
@@ -56,13 +56,13 @@
     },
     "keybindings": [
       {
-        "command": "HNRobert.vscode-ansi.showPretty",
+        "command": "HNRobert.vscode-ansi.showPreview",
         "key": "shift+ctrl+v",
         "mac": "shift+cmd+v",
         "when": "editorLangId == ansi"
       },
       {
-        "command": "HNRobert.vscode-ansi.showPrettyToSide",
+        "command": "HNRobert.vscode-ansi.showPreviewToSide",
         "key": "ctrl+k v",
         "mac": "cmd+k v",
         "when": "editorLangId == ansi"

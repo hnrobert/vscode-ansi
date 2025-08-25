@@ -145,7 +145,7 @@ export class Parser {
             attributeFlags: style.attributeFlags | AttributeFlags.EscapeSequence,
           });
 
-          // And skip them from visible text (used by pretty provider)
+          // And skip them from visible text (used by preview provider)
           textOffset = index + 2;
           index = textOffset;
           continue;
