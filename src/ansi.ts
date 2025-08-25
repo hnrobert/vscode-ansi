@@ -112,39 +112,47 @@ export class Parser {
         break;
       }
 
-      if (text[index + 1] !== "[") {
-        index += 1;
-        continue;
+      if (text[index + 1] === "[") {
+        // Handle CSI (Control Sequence Introducer) sequences - ESC[
+        const csiResult = this._handleCsiSequence(text, index, style);
+        if (csiResult) {
+          spans.push(csiResult.span);
+          textOffset = csiResult.nextIndex;
+          index = textOffset;
+          continue;
+        }
+      } else if (text[index + 1] === "]") {
+        // Handle OSC (Operating System Command) sequences - ESC]
+        const oscResult = this._handleOscSequence(text, index, style);
+        if (oscResult) {
+          spans.push(oscResult.span);
+          textOffset = oscResult.nextIndex;
+          index = textOffset;
+          continue;
+        }
+      } else {
+        // Handle other escape sequences (like ESC=, ESC>, ESC( for charset selection)
+        const nonCsiMatch = text
+          .slice(index + 1)
+          // Match any printable 7-bit ASCII character (space through tilde)
+          .match(/^([\x20-\x7E])/);
+        if (nonCsiMatch) {
+          // Mark these non-printing, non-formatting escape sequences so they get dimmed in the editor
+          spans.push({
+            ...style,
+            offset: index,
+            length: 2,
+            attributeFlags: style.attributeFlags | AttributeFlags.EscapeSequence,
+          });
+
+          // And skip them from visible text (used by pretty provider)
+          textOffset = index + 2;
+          index = textOffset;
+          continue;
+        }
       }
 
-      const match = text.slice(index + 2).match(/^([0-9;]*)([a-zA-Z])/);
-      if (!match) {
-        index += 1;
-        continue;
-      }
-
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const argString = match[1]!, commandLetter = match[2]!;
-
-      spans.push({
-        ...style,
-        offset: index,
-        length: 2 + argString.length + 1,
-        attributeFlags: style.attributeFlags | AttributeFlags.EscapeSequence,
-      });
-
-      if (commandLetter === "m") {
-        const args = argString
-          .split(";")
-          .filter((arg) => arg !== "")
-          .map((arg) => parseInt(arg, 10));
-        if (args.length === 0) args.push(0);
-
-        this._applyCodes(args, style);
-      }
-
-      textOffset = index + 2 + argString.length + 1;
-      index = textOffset;
+      index += 1;
     }
 
     spans.push({ ...style, offset: textOffset, length: index - textOffset });
@@ -448,5 +456,321 @@ export class Parser {
     const b = ((255 * b6) / 5) | 0;
 
     return (r << 16) | (g << 8) | b;
+  }
+
+  /**
+   * Handle CSI (Control Sequence Introducer) sequences - ESC[
+   */
+  private _handleCsiSequence(text: string, index: number, style: Style): { span: Span; nextIndex: number } | null {
+    // Enhanced pattern to support more CSI sequences including:
+    // - Private parameter markers: ? ! >
+    // - Parameter string: numbers, semicolons, colons
+    // - Intermediate characters: space !"#$%&'()*+,-./
+    // - Final character: @A-Z[\]^_`a-z{|}~
+    const match = text.slice(index + 2).match(/^([?!>]?)([0-9;:]*)([!-/]*)([a-zA-Z@`{}|~[\]\\^_])/);
+    if (!match) {
+      return null;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const privateMarker = match[1] ?? "";
+    const argString = match[2] ?? "";
+    const intermediateChars = match[3] ?? "";
+    const commandLetter = match[4] ?? "";
+
+    const span: Span = {
+      ...style,
+      offset: index,
+      length: 2 + privateMarker.length + argString.length + intermediateChars.length + 1,
+      attributeFlags: style.attributeFlags | AttributeFlags.EscapeSequence,
+    };
+
+    // Handle different types of CSI sequences
+    if (commandLetter === "m") {
+      const args = argString
+        .split(";")
+        .filter((arg) => arg !== "")
+        .map((arg) => parseInt(arg, 10));
+      if (args.length === 0) args.push(0);
+
+      this._applyCodes(args, style);
+    } else if (privateMarker === "?" && (commandLetter === "h" || commandLetter === "l")) {
+      // Handle DEC Private Mode Set/Reset sequences like ?1h, ?1l
+      this._handleDecPrivateMode(argString, commandLetter === "h", style);
+    } else if (commandLetter === "H" || commandLetter === "f") {
+      // Handle cursor position sequences
+      this._handleCursorPosition(argString, style);
+    } else if (
+      commandLetter === "A" ||
+      commandLetter === "B" ||
+      commandLetter === "C" ||
+      commandLetter === "D" ||
+      commandLetter === "E" ||
+      commandLetter === "F" ||
+      commandLetter === "G"
+    ) {
+      // Handle cursor movement sequences
+      this._handleCursorMovement(commandLetter, argString, style);
+    } else if (commandLetter === "J" || commandLetter === "K") {
+      // Handle erase sequences
+      this._handleEraseSequences(commandLetter, argString, style);
+    } else if (commandLetter === "S" || commandLetter === "T") {
+      // Handle scroll sequences
+      this._handleScrollSequences(commandLetter, argString, style);
+    } else if (commandLetter === "s" || commandLetter === "u") {
+      // Handle save/restore cursor position
+      this._handleCursorSaveRestore(commandLetter, style);
+    } else if (commandLetter === "n") {
+      // Handle device status report and similar queries
+      this._handleDeviceStatusReport(argString, style);
+    } else if (commandLetter === "c") {
+      // Handle device attributes
+      this._handleDeviceAttributes(privateMarker, argString, style);
+    } else if (commandLetter === "p" && intermediateChars.includes("!")) {
+      // Handle soft terminal reset (DECSTR)
+      this._handleSoftReset(style);
+    }
+
+    return {
+      span,
+      nextIndex: index + 2 + privateMarker.length + argString.length + intermediateChars.length + 1,
+    };
+  }
+
+  /**
+   * Handle OSC (Operating System Command) sequences - ESC]
+   * These sequences typically end with BEL (0x07) or ESC\ (ST - String Terminator)
+   */
+  private _handleOscSequence(text: string, index: number, style: Style): { span: Span; nextIndex: number } | null {
+    // Look for the terminator (BEL or ESC\)
+    let endIndex = -1;
+    for (let i = index + 2; i < text.length; i++) {
+      if (text.codePointAt(i) === 0x07) {
+        // BEL
+        endIndex = i + 1;
+        break;
+      } else if (text.codePointAt(i) === 0x1b && i + 1 < text.length && text[i + 1] === "\\") {
+        // ESC\
+        endIndex = i + 2;
+        break;
+      }
+    }
+
+    if (endIndex === -1) {
+      // No terminator found, treat as incomplete sequence
+      return null;
+    }
+
+    const span: Span = {
+      ...style,
+      offset: index,
+      length: endIndex - index,
+      attributeFlags: style.attributeFlags | AttributeFlags.EscapeSequence,
+    };
+
+    // Parse OSC sequence
+    const oscContent = text.slice(index + 2, endIndex - (text[endIndex - 1] === "\\" ? 2 : 1));
+    const semicolonIndex = oscContent.indexOf(";");
+
+    if (semicolonIndex !== -1) {
+      const command = oscContent.slice(0, semicolonIndex);
+      const data = oscContent.slice(semicolonIndex + 1);
+
+      // Common OSC commands:
+      // 0 - Set window title and icon name
+      // 1 - Set icon name
+      // 2 - Set window title
+      // 4 - Set/query color palette
+      // 10-19 - Set/query dynamic colors
+      // 52 - Clipboard operations
+      this._handleOscCommand(command, data, style);
+    }
+
+    return {
+      span,
+      nextIndex: endIndex,
+    };
+  }
+
+  /**
+   * Handle specific OSC commands
+   */
+  private _handleOscCommand(_command: string, _data: string, _style: Style): void {
+    const commandNum = parseInt(_command, 10);
+
+    switch (commandNum) {
+      case 0:
+      case 1:
+      case 2:
+        // Window/icon title - no visual effect in editor
+        break;
+      case 4:
+        // Color palette manipulation - could affect colors in future
+        break;
+      case 10:
+      case 11:
+      case 12:
+      case 13:
+      case 14:
+      case 15:
+      case 16:
+      case 17:
+      case 18:
+      case 19:
+        // Dynamic color changes - could affect colors in future
+        break;
+      case 52:
+        // Clipboard operations - no visual effect in editor
+        break;
+      default:
+        // Unknown OSC command
+        break;
+    }
+  }
+
+  /**
+   * Handle cursor save/restore commands (s and u)
+   */
+  private _handleCursorSaveRestore(_command: string, _style: Style): void {
+    // s - Save cursor position and attributes
+    // u - Restore cursor position and attributes
+    // For display purposes, we just mark it as an escape sequence
+  }
+
+  /**
+   * Handle DEC Private Mode Set/Reset sequences (ESC[?...h or ESC[?...l)
+   * These sequences control various terminal behavior modes
+   */
+  private _handleDecPrivateMode(argString: string, _isSet: boolean, _style: Style): void {
+    const _args = argString
+      .split(";")
+      .filter((arg) => arg !== "")
+      .map((arg) => parseInt(arg, 10));
+
+    // Common DEC private modes:
+    // ?1 - Application Cursor Keys Mode
+    // ?3 - 132 Column Mode
+    // ?6 - Origin Mode
+    // ?7 - Autowrap Mode
+    // ?9 - X10 Mouse Reporting
+    // ?25 - Cursor Visibility
+    // ?47 - Alternate Screen Buffer
+    // ?1000 - Normal Mouse Tracking
+    // ?1002 - Button Event Mouse Tracking
+    // ?1003 - Any Event Mouse Tracking
+    // ?1006 - SGR Mouse Mode
+    // ?1049 - Save cursor position and switch to alternate screen
+
+    // For now, we'll just mark these as escape sequences without affecting styling
+    // In a full terminal implementation, these would affect terminal behavior
+  }
+
+  /**
+   * Handle cursor position sequences (ESC[...H or ESC[...f)
+   */
+  private _handleCursorPosition(argString: string, _style: Style): void {
+    const args = argString
+      .split(";")
+      .filter((arg) => arg !== "")
+      .map((arg) => parseInt(arg, 10));
+
+    // Default position is 1,1 if no arguments
+    const _row = args[0] || 1;
+    const _col = args[1] || 1;
+
+    // In a full terminal implementation, this would move the cursor
+    // For display purposes, we just mark it as an escape sequence
+  }
+
+  /**
+   * Handle cursor movement sequences
+   * A - Cursor Up, B - Cursor Down, C - Cursor Forward, D - Cursor Backward
+   * E - Cursor Next Line, F - Cursor Previous Line, G - Cursor Horizontal Absolute
+   */
+  private _handleCursorMovement(_command: string, argString: string, _style: Style): void {
+    const _count = parseInt(argString, 10) || 1;
+
+    // In a full terminal implementation, these would move the cursor
+    // A - Move cursor up by count rows
+    // B - Move cursor down by count rows
+    // C - Move cursor forward by count columns
+    // D - Move cursor backward by count columns
+    // E - Move cursor to beginning of line, count lines down
+    // F - Move cursor to beginning of line, count lines up
+    // G - Move cursor to column count in current row
+
+    // For display purposes, we just mark it as an escape sequence
+  }
+
+  /**
+   * Handle erase sequences
+   * J - Erase in Display, K - Erase in Line
+   */
+  private _handleEraseSequences(_command: string, argString: string, _style: Style): void {
+    const _mode = parseInt(argString, 10) || 0;
+
+    // if (command === "J") {
+    // Erase in Display
+    // 0 - Clear from cursor to end of screen
+    // 1 - Clear from cursor to beginning of screen
+    // 2 - Clear entire screen
+    // 3 - Clear entire screen and delete all lines in scrollback buffer
+    // } else if (command === "K") {
+    // Erase in Line
+    // 0 - Clear from cursor to end of line
+    // 1 - Clear from cursor to beginning of line
+    // 2 - Clear entire line
+    // }
+
+    // For display purposes, we just mark it as an escape sequence
+  }
+
+  /**
+   * Handle scroll sequences
+   * S - Scroll Up, T - Scroll Down
+   */
+  private _handleScrollSequences(_command: string, argString: string, _style: Style): void {
+    const _count = parseInt(argString, 10) || 1;
+
+    // S - Scroll up by count lines
+    // T - Scroll down by count lines
+
+    // For display purposes, we just mark it as an escape sequence
+  }
+
+  /**
+   * Handle device status report sequences (ESC[6n, etc.)
+   */
+  private _handleDeviceStatusReport(argString: string, _style: Style): void {
+    const _command = parseInt(argString, 10) || 6;
+
+    // 5n - Device Status Report (answer: ESC[0n for ready, ESC[3n for malfunction)
+    // 6n - Cursor Position Report (answer: ESC[row;columnR)
+
+    // For display purposes, we just mark it as an escape sequence
+  }
+
+  /**
+   * Handle device attributes sequences (ESC[c, ESC[>c)
+   */
+  private _handleDeviceAttributes(privateMarker: string, _argString: string, _style: Style): void {
+    if (privateMarker === ">") {
+      // Secondary Device Attributes
+      // Reports terminal type and version
+    } else {
+      // Primary Device Attributes
+      // Reports supported features
+    }
+
+    // For display purposes, we just mark it as an escape sequence
+  }
+
+  /**
+   * Handle soft terminal reset (ESC[!p)
+   */
+  private _handleSoftReset(_style: Style): void {
+    // Soft reset - resets terminal to initial state but doesn't clear screen
+    // In a full implementation, this would reset various terminal settings
+    // For display purposes, we just mark it as an escape sequence
   }
 }

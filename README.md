@@ -1,12 +1,12 @@
+# ANSI Colors
+
+ANSI Color styling and previewer for your text editor.
+
 [![Visual Studio Marketplace](https://flat.badgen.net/vs-marketplace/i/iliazeus.vscode-ansi?icon=visualstudio)](https://marketplace.visualstudio.com/items?itemName=iliazeus.vscode-ansi)
 [![GitHub](https://flat.badgen.net/github/release/iliazeus/vscode-ansi?icon=github)](https://github.com/iliazeus/vscode-ansi)
 [![MIT License](https://flat.badgen.net/badge/license/MIT/blue)](LICENSE)
 [![Open Issues](https://flat.badgen.net/github/open-issues/iliazeus/vscode-ansi?icon=github)](https://github.com/iliazeus/vscode-ansi/issues)
 [![Closed Issues](https://flat.badgen.net/github/closed-issues/iliazeus/vscode-ansi?icon=github)](https://github.com/iliazeus/vscode-ansi/issues?q=is%3Aissue+is%3Aclosed)
-
-# ANSI Colors
-
-ANSI Color styling for your text editor.
 
 ## Basic usage
 
@@ -39,6 +39,20 @@ The extension fetches the colors from the current theme and aims to look as good
   `vscode-ansi` uses VSCode's built-in text editors in readonly mode (via [`TextDocumentContentProvider`](https://code.visualstudio.com/api/references/vscode-api#TextDocumentContentProvider)) for preview display. The only custom editors allowed to open files "by default" (e.g. by double-click) are [webview-based custom editors](https://code.visualstudio.com/api/extension-guides/custom-editors). But building such an editor means reimplementing all the default functionality from scratch - navigation, searching, line wrap, interaction with other extensions (e.g. spell check).
 
 ## Supported ANSI escape codes
+
+**Enhanced Support (v1.2.0+)**: This extension now supports a comprehensive range of ANSI escape sequences including:
+
+- **SGR (Select Graphic Rendition)**: Colors, text formatting (bold, italic, underline, etc.)
+- **Cursor Control**: Position (H, f), movement (A-G), save/restore (s, u)
+- **DEC Private Modes**: Terminal behavior control (?...h/?...l) for cursor visibility, mouse tracking, alternate screen
+- **Screen Manipulation**: Erase sequences (J, K), scroll control (S, T)
+- **OSC Commands**: Window titles, color palette control, clipboard operations
+- **Character Sets**: ASCII, line drawing, and international character sets
+- **Device Queries**: Status reports and device attributes
+
+See [ENHANCED_ANSI_SUPPORT.md](ENHANCED_ANSI_SUPPORT.md) for complete documentation of supported sequences.
+
+### Visual Examples
 
 Basic colors and formatting:
 

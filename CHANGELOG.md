@@ -1,3 +1,5 @@
+# Changelog
+
 ## 1.1.8
 
 - Add inverse support (^[7)

@@ -1,0 +1,70 @@
+Enhanced ANSI Escape Sequence Demonstration
+============================================
+
+1. Basic formatting (existing functionality):
+[31mRed text[0m
+[1;32mBold green text[0m
+[4;34mUnderlined blue text[0m
+
+2. DEC Private Mode sequences:
+[?1hApplication cursor keys enabled
+[?25lCursor hidden (you won't see this effect in VS Code)
+[?1000hMouse tracking enabled
+[?47hSwitched to alternate screen buffer
+Normal text with private modes set
+[?47l[?1000l[?25h[?1lModes reset
+
+3. Cursor positioning and movement:
+[HCursor moved to home (1,1)
+[5;10HCursor moved to row 5, column 10
+[3ACursor moved up 3 lines
+[2CCursor moved forward 2 columns
+[sCursor position saved
+More text here
+[uCursor position restored
+
+4. Screen and line manipulation:
+[2JScreen cleared (conceptually)
+[KLine cleared from cursor to end
+[1KLine cleared from cursor to beginning
+[2KEntire line cleared
+
+5. Scroll operations:
+[3SScrolled up 3 lines
+[2TScrolled down 2 lines
+
+6. OSC (Operating System Command) sequences:
+]0;Enhanced ANSI Demo WindowWindow title set
+]2;Demo Title\Alternative window title with ST terminator
+]4;1;rgb:ff/00/00Color palette modified
+
+7. Complex real-world example (like your original):
+[?1h=[?1h=[?1h=[?1h=[?1h=URL: https://localhost:7118, latency: 0ms
+
+8. Character set selection and line drawing:
+(0
+lqqqqqqqqqqqqqqqqqqqqqqqqqqqqqk
+x  (B[32mSpecial characters mixed with color[0m(0  x
+mqqqqqqqqqqqqqqqqqqqqqqqqqqqqj
+(B
+
+9. Mixed formatting with control sequences:
+[2J[H]2;Status Display
+[1;1H[31;1m┌─ System Status ─┝[0m
+[2;1H[32m│ [42;30m ONLINE [0m[32m          │[0m
+[3;1H[33m│ Load: [43;30m 85% [0m[33m      │[0m
+[4;1H[31;1m└──────────────────┘[0m
+[6;1H[?25lProcessing...[?25h
+
+10. Device status and attributes:
+[6nCursor position report requested
+[cPrimary device attributes query
+[>cSecondary device attributes query
+[!pSoft terminal reset
+
+11. Others
+=Equal sign (DECPAM) set
+
+All these sequences are now properly recognized and marked as escape sequences
+by the enhanced ANSI parser, providing better support for real-world terminal
+output and log files.
