@@ -84,12 +84,11 @@
   },
   "scripts": {
     "build": "tsup",
-    "vscode:prepublish": "pnpm run build",
     "lint": "eslint src --ext ts",
     "watch": "tsup --watch",
-    "pretest": "pnpm run build && pnpm run lint",
     "test": "node ./out/test/runTest.js",
-    "deploy": "vsce publish"
+    "test:stable": "VSCODE_TEST_VERSION=stable node ./out/test/runTest.js",
+    "test:insiders": "VSCODE_TEST_VERSION=insiders node ./out/test/runTest.js"
   },
   "devDependencies": {
     "@types/glob": "^7.1.1",
@@ -98,6 +97,7 @@
     "@types/vscode": "^1.45.0",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",
+    "@vscode/test-electron": "^2.4.0",
     "@vscode/vsce": "^2.18.0",
     "eslint": "^8.35.0",
     "glob": "^7.1.6",

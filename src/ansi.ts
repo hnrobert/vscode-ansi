@@ -467,7 +467,14 @@ export class Parser {
     // - Parameter string: numbers, semicolons, colons
     // - Intermediate characters: space !"#$%&'()*+,-./
     // - Final character: @A-Z[\]^_`a-z{|}~
-    const match = text.slice(index + 2).match(/^([?!>]?)([0-9;:]*)([!-/]*)([a-zA-Z@`{}|~[\]\\^_])/);
+    const match = text
+      .slice(index + 2)
+      // CSI grammar byte classes:
+      // private: 0x3C-0x3F  [<=>?]
+      // params:  0x30-0x3F  [0-9:;<=>?]
+      // interm:  0x20-0x2F  [\x20-\x2F] (includes space)
+      // final:   0x40-0x7E  [@-~]
+      .match(/^([<=>?]?)([0-9:;<=>?]*)([\x20-\x2F]*)([@-~])/);
     if (!match) {
       return null;
     }
