@@ -1,17 +1,18 @@
 {
   "name": "vscode-ansi",
-  "publisher": "iliazeus",
-  "displayName": "ANSI Colors",
-  "description": "ANSI color styling for text documents",
-  "version": "1.2.0",
+  "publisher": "HNRobert",
+  "displayName": "ANSI Previewer",
+  "description": "ANSI color styling and previewer for text documents",
+  "version": "1.0.0",
   "license": "MIT",
   "repository": {
-    "url": "https://github.com/iliazeus/vscode-ansi"
+    "url": "https://github.com/HNRobert/vscode-ansi"
   },
   "bugs": {
-    "url": "https://github.com/iliazeus/vscode-ansi/issues",
-    "email": "ilia.pozdnyakov@ya.ru"
+    "url": "https://github.com/HNRobert/vscode-ansi/issues",
+    "email": "hnrobert@qq.com"
   },
+  "packageManager": "pnpm@10.13.1",
   "icon": "images/icon.png",
   "engines": {
     "vscode": "^1.74.0"
@@ -31,13 +32,13 @@
   "contributes": {
     "commands": [
       {
-        "command": "iliazeus.vscode-ansi.showPretty",
+        "command": "HNRobert.vscode-ansi.showPretty",
         "title": "Open Preview",
         "category": "ANSI Text",
         "icon": "$(open-preview)"
       },
       {
-        "command": "iliazeus.vscode-ansi.showPrettyToSide",
+        "command": "HNRobert.vscode-ansi.showPrettyToSide",
         "title": "Open Preview to the Side",
         "category": "ANSI Text",
         "icon": "$(open-preview)"
@@ -46,8 +47,8 @@
     "menus": {
       "editor/title": [
         {
-          "command": "iliazeus.vscode-ansi.showPrettyToSide",
-          "alt": "iliazeus.vscode-ansi.showPretty",
+          "command": "HNRobert.vscode-ansi.showPrettyToSide",
+          "alt": "HNRobert.vscode-ansi.showPretty",
           "when": "editorLangId == ansi",
           "group": "navigation"
         }
@@ -55,13 +56,13 @@
     },
     "keybindings": [
       {
-        "command": "iliazeus.vscode-ansi.showPretty",
+        "command": "HNRobert.vscode-ansi.showPretty",
         "key": "shift+ctrl+v",
         "mac": "shift+cmd+v",
         "when": "editorLangId == ansi"
       },
       {
-        "command": "iliazeus.vscode-ansi.showPrettyToSide",
+        "command": "HNRobert.vscode-ansi.showPrettyToSide",
         "key": "ctrl+k v",
         "mac": "cmd+k v",
         "when": "editorLangId == ansi"
@@ -82,27 +83,28 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "yarn run compile",
-    "compile": "tsc -p ./",
+    "build": "tsup",
+    "vscode:prepublish": "pnpm run build",
     "lint": "eslint src --ext ts",
-    "watch": "tsc -watch -p ./",
-    "pretest": "yarn run compile && yarn run lint",
+    "watch": "tsup --watch",
+    "pretest": "pnpm run build && pnpm run lint",
     "test": "node ./out/test/runTest.js",
-    "deploy": "vsce publish --yarn"
+    "deploy": "vsce publish"
   },
   "devDependencies": {
     "@types/glob": "^7.1.1",
     "@types/mocha": "^7.0.2",
     "@types/node": "^13.11.0",
     "@types/vscode": "^1.45.0",
-    "@typescript-eslint/eslint-plugin": "^5.53.0",
-    "@typescript-eslint/parser": "^5.53.0",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
     "@vscode/vsce": "^2.18.0",
     "eslint": "^8.35.0",
     "glob": "^7.1.6",
     "mocha": "^7.1.1",
     "prettier": "^2.8.4",
-    "typescript": "^4.9.5",
+    "tsup": "^8.0.1",
+    "typescript": "~5.1.6",
     "vscode-test": "^1.3.0"
   },
   "dependencies": {}

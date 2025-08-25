@@ -2,11 +2,11 @@
 
 ANSI Color styling and previewer for your text editor.
 
-[![Visual Studio Marketplace](https://flat.badgen.net/vs-marketplace/i/iliazeus.vscode-ansi?icon=visualstudio)](https://marketplace.visualstudio.com/items?itemName=iliazeus.vscode-ansi)
-[![GitHub](https://flat.badgen.net/github/release/iliazeus/vscode-ansi?icon=github)](https://github.com/iliazeus/vscode-ansi)
+[![Visual Studio Marketplace](https://flat.badgen.net/vs-marketplace/i/HNRobert.vscode-ansi?icon=visualstudio)](https://marketplace.visualstudio.com/items?itemName=HNRobert.vscode-ansi)
+[![GitHub](https://flat.badgen.net/github/release/HNRobert/vscode-ansi?icon=github)](https://github.com/HNRobert/vscode-ansi)
 [![MIT License](https://flat.badgen.net/badge/license/MIT/blue)](LICENSE)
-[![Open Issues](https://flat.badgen.net/github/open-issues/iliazeus/vscode-ansi?icon=github)](https://github.com/iliazeus/vscode-ansi/issues)
-[![Closed Issues](https://flat.badgen.net/github/closed-issues/iliazeus/vscode-ansi?icon=github)](https://github.com/iliazeus/vscode-ansi/issues?q=is%3Aissue+is%3Aclosed)
+[![Open Issues](https://flat.badgen.net/github/open-issues/HNRobert/vscode-ansi?icon=github)](https://github.com/HNRobert/vscode-ansi/issues)
+[![Closed Issues](https://flat.badgen.net/github/closed-issues/HNRobert/vscode-ansi?icon=github)](https://github.com/HNRobert/vscode-ansi/issues?q=is%3Aissue+is%3Aclosed)
 
 ## Basic usage
 
@@ -30,7 +30,7 @@ The extension fetches the colors from the current theme and aims to look as good
 
 - How do I enable this extension for files other than `.ans` and `.ansi`?
 
-  This can be done using the VS Code "language mode" feature. For example, to enable it for all `.log` filesd, open a `.log` file, then do `F1 - Change Language Mode - Configure File Association for '.log' - ANSI Text`.
+  This can be done using the VS Code "language mode" feature. For example, to enable it for all `.log` files, open a `.log` file, then do `F1 - Change Language Mode - Configure File Association for '.log' - ANSI Text`.
 
 - Can the "preview mode" be opened automatically?
 
@@ -44,7 +44,7 @@ The extension fetches the colors from the current theme and aims to look as good
 
 - **SGR (Select Graphic Rendition)**: Colors, text formatting (bold, italic, underline, etc.)
 - **Cursor Control**: Position (H, f), movement (A-G), save/restore (s, u)
-- **DEC Private Modes**: Terminal behavior control (?...h/?...l) for cursor visibility, mouse tracking, alternate screen
+- **DEC Private Modes**: Terminal behaviour control (?...h/?...l) for cursor visibility, mouse tracking, alternate screen
 - **Screen Manipulation**: Erase sequences (J, K), scroll control (S, T)
 - **OSC Commands**: Window titles, color palette control, clipboard operations
 - **Character Sets**: ASCII, line drawing, and international character sets

@@ -6,7 +6,7 @@ export class EditorRedrawWatcher {
 
   private _visibleEditorSubscriptions: { dispose(): void }[] = [];
 
-  private _updateVisibleEditorSubscriptions(editors: TextEditor[]): void {
+  private _updateVisibleEditorSubscriptions(editors: readonly TextEditor[]): void {
     for (const subscription of this._visibleEditorSubscriptions) {
       subscription.dispose();
     }
@@ -32,7 +32,7 @@ export class EditorRedrawWatcher {
         }
       }),
 
-      window.onDidChangeVisibleTextEditors((editors) => {
+      window.onDidChangeVisibleTextEditors((editors: readonly TextEditor[]) => {
         this._updateVisibleEditorSubscriptions(editors);
 
         for (const editor of editors) {

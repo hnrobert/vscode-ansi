@@ -16,7 +16,7 @@ import {
   registerTextEditorDecorationProvider,
 } from "./TextEditorDecorationProvider";
 
-export const extensionId = "iliazeus.vscode-ansi" as const;
+export const extensionId = "HNRobert.vscode-ansi" as const;
 
 export async function activate(context: ExtensionContext): Promise<void> {
   const editorRedrawWatcher = new EditorRedrawWatcher();
