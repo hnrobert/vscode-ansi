@@ -128,12 +128,21 @@ jobs:
             git push origin --tags
           fi
 
+      - name: Ensure npm-style node_modules for vsce
+        run: |
+          # Create an npm-style node_modules so vsce will include dependencies
+          if [ -f package-lock.json ]; then
+            npm ci --no-audit --no-fund || npm install --no-audit --no-fund
+          else
+            npm install --no-audit --no-fund || true
+          fi
+
       - name: Package the extension
         run: |
           if [[ ${{ steps.prerelease.outputs.prerelease }} == 'true' ]]; then
-            pnpm exec vsce package --pre-release --no-dependencies -o ansi-viewer-${{ steps.extract_tag.outputs.tag }}.vsix
+            pnpm exec vsce package --pre-release -o ansi-viewer-${{ steps.extract_tag.outputs.tag }}.vsix
           else
-            pnpm exec vsce package --no-dependencies -o ansi-viewer-${{ steps.extract_tag.outputs.tag }}.vsix
+            pnpm exec vsce package -o ansi-viewer-${{ steps.extract_tag.outputs.tag }}.vsix
           fi
 
       - name: Create GitHub Release
@@ -153,9 +162,9 @@ jobs:
       - name: Publish to VSCode Marketplace
         run: |
           if [[ ${{ steps.prerelease.outputs.prerelease }} == 'true' ]]; then
-            pnpm exec vsce publish --pre-release --no-dependencies -p ${{ secrets.VSCE_PAT }}
+            pnpm exec vsce publish --pre-release -p ${{ secrets.VSCE_PAT }}
           else
-            pnpm exec vsce publish --no-dependencies -p ${{ secrets.VSCE_PAT }}
+            pnpm exec vsce publish -p ${{ secrets.VSCE_PAT }}
           fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.VSCE_PAT }}
