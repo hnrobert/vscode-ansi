@@ -8,6 +8,8 @@ import {
   TextDocumentShowOptions,
   TextDocument,
   languages,
+  StatusBarItem,
+  StatusBarAlignment,
 } from "vscode";
 import * as micromatch from "micromatch";
 
@@ -21,10 +23,35 @@ import {
 
 export const extensionId = "HNRobert.vscode-ansi" as const;
 
+// 全局状态栏项目
+let statusBarItem: StatusBarItem;
+
+/**
+ * 检查 ANSI Previewer 插件是否启用
+ */
+function isAnsiPreviewerEnabled(): boolean {
+  const config = workspace.getConfiguration("ansiPreviewer");
+  return config.get("enable", true);
+}
+
+/**
+ * 更新状态栏显示
+ */
+function updateStatusBar(enabled: boolean): void {
+  statusBarItem.text = enabled ? "$(check) ANSI" : "$(x) ANSI";
+  statusBarItem.tooltip = `ANSI Previewer: ${enabled ? "Enabled" : "Disabled"}`;
+  statusBarItem.show();
+}
+
 /**
  * 检查文件是否应该自动设置为 ANSI 语言模式
  */
 function shouldSetAnsiLanguageMode(document: TextDocument): boolean {
+  // 首先检查插件是否启用
+  if (!isAnsiPreviewerEnabled()) {
+    return false;
+  }
+
   const config = workspace.getConfiguration("ansiPreviewer");
   const autoLanguageModeFiles: string[] = config.get("autoLanguageModeFiles", ["**/*.ans", "**/*.ansi"]);
 
@@ -103,6 +130,14 @@ async function setAnsiLanguageMode(document: TextDocument, context: string): Pro
 
 export async function activate(context: ExtensionContext): Promise<void> {
   console.log(`[ANSI Extension] Extension activated`);
+
+  // 创建状态栏项目
+  statusBarItem = window.createStatusBarItem(StatusBarAlignment.Right, 100.1);
+  statusBarItem.command = `${extensionId}.toggleEnable`;
+  context.subscriptions.push(statusBarItem);
+
+  // 初始化状态栏
+  updateStatusBar(isAnsiPreviewerEnabled());
 
   const editorRedrawWatcher = new EditorRedrawWatcher();
   context.subscriptions.push(editorRedrawWatcher);
@@ -201,15 +236,24 @@ export async function activate(context: ExtensionContext): Promise<void> {
   // 监听配置更改
   context.subscriptions.push(
     workspace.onDidChangeConfiguration((changedConfig) => {
+      // 如果插件启用状态改变，更新状态栏
+      if (changedConfig.affectsConfiguration("ansiPreviewer.enable")) {
+        console.log("ansiPreviewer.enable changed, updating status bar");
+        updateStatusBar(isAnsiPreviewerEnabled());
+      }
+
       // 如果转义序列显示设置改变，清理装饰缓存并重新绘制
       if (changedConfig.affectsConfiguration("ansiPreviewer.escapeSequenceDisplay")) {
-        console.log("ansiPreviewer.escapeSequenceDisplay changed, clearing escape sequence decorations");
-        ansiDecorationProvider.clearEscapeSequenceDecorations();
+        // 只有在插件启用时才处理
+        if (isAnsiPreviewerEnabled()) {
+          console.log("ansiPreviewer.escapeSequenceDisplay changed, clearing escape sequence decorations");
+          ansiDecorationProvider.clearEscapeSequenceDecorations();
 
-        // 为所有 ANSI 文件重新触发装饰
-        for (const editor of window.visibleTextEditors) {
-          if (editor.document.languageId === "ansi") {
-            editorRedrawWatcher.forceEmitForUri(editor.document.uri);
+          // 为所有 ANSI 文件重新触发装饰
+          for (const editor of window.visibleTextEditors) {
+            if (editor.document.languageId === "ansi") {
+              editorRedrawWatcher.forceEmitForUri(editor.document.uri);
+            }
           }
         }
       }
@@ -218,6 +262,11 @@ export async function activate(context: ExtensionContext): Promise<void> {
 
   context.subscriptions.push(
     editorRedrawWatcher.onEditorRedraw(async (editor) => {
+      // 检查插件是否启用
+      if (!isAnsiPreviewerEnabled()) {
+        return;
+      }
+
       const tokenSource = new CancellationTokenSource();
       await executeRegisteredTextEditorDecorationProviders(editor, tokenSource.token);
       tokenSource.dispose();
@@ -228,6 +277,20 @@ export async function activate(context: ExtensionContext): Promise<void> {
     commands.registerTextEditorCommand(`${extensionId}.insertEscapeCharacter`, (editor, edit) => {
       edit.delete(editor.selection);
       edit.insert(editor.selection.end, "\x1b");
+    })
+  );
+
+  // 注册切换开关命令
+  context.subscriptions.push(
+    commands.registerCommand(`${extensionId}.toggleEnable`, async () => {
+      const config = workspace.getConfiguration("ansiPreviewer");
+      const currentValue = config.get("enable", true);
+      const newValue = !currentValue;
+
+      await config.update("enable", newValue, true);
+      updateStatusBar(newValue);
+
+      window.showInformationMessage(`ANSI Previewer ${newValue ? "enabled" : "disabled"}`);
     })
   );
 

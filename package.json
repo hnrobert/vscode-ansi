@@ -44,6 +44,11 @@
         "title": "Open Preview to the Side",
         "category": "ANSI Text",
         "icon": "$(open-preview)"
+      },
+      {
+        "command": "HNRobert.vscode-ansi.toggleEnable",
+        "title": "Toggle ANSI Previewer",
+        "category": "ANSI Text"
       }
     ],
     "menus": {
@@ -86,6 +91,11 @@
     "configuration": {
       "title": "ANSI Previewer",
       "properties": {
+        "ansiPreviewer.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable ANSI Previewer extension functionality"
+        },
         "ansiPreviewer.autoLanguageModeFiles": {
           "type": "array",
           "items": {

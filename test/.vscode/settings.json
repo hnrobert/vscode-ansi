@@ -1,1 +1,8 @@
-{}
+{
+    "ansiPreviewer.escapeSequenceDisplay": "hidden",
+    "ansiPreviewer.autoLanguageModeFiles": [
+        "**/*.ans",
+        "**/*.ansi",
+        "*.log"
+    ]
+}
