@@ -128,14 +128,11 @@ jobs:
             git push origin --tags
           fi
 
-      - name: Ensure npm-style node_modules for vsce
+      - name: Prune devDependencies (keep production deps)
         run: |
-          # Create an npm-style node_modules so vsce will include dependencies
-          if [ -f package-lock.json ]; then
-            npm ci --no-audit --no-fund || npm install --no-audit --no-fund
-          else
-            npm install --no-audit --no-fund || true
-          fi
+          rm -rf node_modules
+          pnpm install --prod --frozen-lockfile --shamefully-hoist
+          echo "Production dependencies present:" && ls -1 node_modules | head -n 50 || true
 
       - name: Package the extension
         run: |
