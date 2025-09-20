@@ -137,9 +137,9 @@ jobs:
       - name: Package the extension
         run: |
           if [[ ${{ steps.prerelease.outputs.prerelease }} == 'true' ]]; then
-            pnpm exec vsce package --pre-release -o ansi-viewer-${{ steps.extract_tag.outputs.tag }}.vsix
+            pnpm dlx @vscode/vsce package --pre-release -o ansi-viewer-${{ steps.extract_tag.outputs.tag }}.vsix
           else
-            pnpm exec vsce package -o ansi-viewer-${{ steps.extract_tag.outputs.tag }}.vsix
+            pnpm dlx @vscode/vsce package -o ansi-viewer-${{ steps.extract_tag.outputs.tag }}.vsix
           fi
 
       - name: Create GitHub Release
@@ -159,9 +159,9 @@ jobs:
       - name: Publish to VSCode Marketplace
         run: |
           if [[ ${{ steps.prerelease.outputs.prerelease }} == 'true' ]]; then
-            pnpm exec vsce publish --pre-release -p ${{ secrets.VSCE_PAT }}
+            pnpm dlx @vscode/vsce publish --pre-release -p ${{ secrets.VSCE_PAT }}
           else
-            pnpm exec vsce publish -p ${{ secrets.VSCE_PAT }}
+            pnpm dlx @vscode/vsce publish -p ${{ secrets.VSCE_PAT }}
           fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.VSCE_PAT }}
