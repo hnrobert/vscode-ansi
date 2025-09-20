@@ -66,12 +66,17 @@ export class AnsiDecorationProvider implements TextEditorDecorationProvider {
 
   private _provideDecorationsForAnsiLanguageType(document: TextDocument): ProviderResult<[string, Range[]][]> {
     const result = new Map<string, Range[]>();
+    
+    const config = workspace.getConfiguration("ansiPreviewer");
+    const escapeSequenceDisplay: string = config.get("escapeSequenceDisplay", "dimmed");
+    
     for (const key of this._decorationTypes.keys()) {
       result.set(key, []);
     }
 
     const escapeDecorations: Range[] = [];
-    result.set("escape", escapeDecorations);
+    const escapeKey = `escape_${escapeSequenceDisplay}`;
+    result.set(escapeKey, escapeDecorations);
 
     const parser = new ansi.Parser();
 
@@ -137,11 +142,64 @@ export class AnsiDecorationProvider implements TextEditorDecorationProvider {
     return [...result];
   }
 
-  private _decorationTypes = new Map<string, TextEditorDecorationType>([
-    ["escape", window.createTextEditorDecorationType({ opacity: "50%" })],
-  ]);
+  private _decorationTypes = new Map<string, TextEditorDecorationType>();
+
+  /**
+   * 清理转义序列装饰缓存，用于配置更改时
+   */
+  public clearEscapeSequenceDecorations(): void {
+    for (const [key, decorationType] of this._decorationTypes.entries()) {
+      if (key.startsWith("escape_")) {
+        decorationType.dispose();
+        this._decorationTypes.delete(key);
+      }
+    }
+  }
+
+  private getEscapeSequenceDecorationType(): TextEditorDecorationType {
+    const config = workspace.getConfiguration("ansiPreviewer");
+    const escapeSequenceDisplay: string = config.get("escapeSequenceDisplay", "dimmed");
+    
+    const cacheKey = `escape_${escapeSequenceDisplay}`;
+    let decorationType = this._decorationTypes.get(cacheKey);
+    
+    if (!decorationType) {
+      // 清理之前的转义序列装饰类型
+      for (const [key, oldDecorationType] of this._decorationTypes.entries()) {
+        if (key.startsWith("escape_")) {
+          oldDecorationType.dispose();
+          this._decorationTypes.delete(key);
+        }
+      }
+      
+      switch (escapeSequenceDisplay) {
+        case "normal":
+          decorationType = window.createTextEditorDecorationType({});
+          break;
+        case "hidden":
+          decorationType = window.createTextEditorDecorationType({ 
+            opacity: "0%",
+            // 或者使用 textDecoration 来完全隐藏
+            textDecoration: "none; font-size: 0px;"
+          });
+          break;
+        case "dimmed":
+        default:
+          decorationType = window.createTextEditorDecorationType({ opacity: "50%" });
+          break;
+      }
+      this._decorationTypes.set(cacheKey, decorationType);
+    }
+    
+    return decorationType;
+  }
 
   resolveDecoration(key: string): ProviderResult<TextEditorDecorationType> {
+    // 处理转义序列装饰的动态键
+    if (key.startsWith("escape_")) {
+      return this.getEscapeSequenceDecorationType();
+    }
+    
     let decorationType = this._decorationTypes.get(key);
 
     if (decorationType) {

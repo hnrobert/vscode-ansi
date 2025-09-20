@@ -155,10 +155,21 @@ export async function activate(context: ExtensionContext): Promise<void> {
           }
         }
       }
-    })
-  );
 
-  // 监听文档打开事件，自动设置 ANSI 语言模式
+      // 监听转义序列显示配置的变更
+      if (event.affectsConfiguration("ansiPreviewer.escapeSequenceDisplay")) {
+        console.log(`[ANSI Extension] Escape sequence display configuration changed, refreshing decorations`);
+
+        // 触发所有 ANSI 文档的装饰刷新
+        for (const editor of window.visibleTextEditors) {
+          if (editor.document.languageId === "ansi") {
+            // 通过重新绘制编辑器来刷新装饰
+            editorRedrawWatcher.forceEmitForUri(editor.document.uri);
+          }
+        }
+      }
+    })
+  ); // 监听文档打开事件，自动设置 ANSI 语言模式
   context.subscriptions.push(
     workspace.onDidOpenTextDocument(async (document: TextDocument) => {
       console.log(`[ANSI Extension] Document opened: ${document.fileName}, language: ${document.languageId}`);
@@ -186,6 +197,24 @@ export async function activate(context: ExtensionContext): Promise<void> {
   context.subscriptions.push(ansiDecorationProvider);
 
   context.subscriptions.push(registerTextEditorDecorationProvider(ansiDecorationProvider));
+
+  // 监听配置更改
+  context.subscriptions.push(
+    workspace.onDidChangeConfiguration((changedConfig) => {
+      // 如果转义序列显示设置改变，清理装饰缓存并重新绘制
+      if (changedConfig.affectsConfiguration("ansiPreviewer.escapeSequenceDisplay")) {
+        console.log("ansiPreviewer.escapeSequenceDisplay changed, clearing escape sequence decorations");
+        ansiDecorationProvider.clearEscapeSequenceDecorations();
+
+        // 为所有 ANSI 文件重新触发装饰
+        for (const editor of window.visibleTextEditors) {
+          if (editor.document.languageId === "ansi") {
+            editorRedrawWatcher.forceEmitForUri(editor.document.uri);
+          }
+        }
+      }
+    })
+  );
 
   context.subscriptions.push(
     editorRedrawWatcher.onEditorRedraw(async (editor) => {

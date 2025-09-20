@@ -96,6 +96,16 @@
             "**/*.ansi"
           ],
           "description": "File glob patterns for files that should automatically be set to ANSI language mode when opened. This enables ANSI escape sequence highlighting. Supports gitignore-style patterns: '*.log' matches log files in any directory, 'logs/*.txt' matches txt files in logs folder."
+        },
+        "ansiPreviewer.escapeSequenceDisplay": {
+          "type": "string",
+          "enum": [
+            "normal",
+            "dimmed",
+            "hidden"
+          ],
+          "default": "dimmed",
+          "description": "How to display ANSI escape sequences in the editor. 'normal' shows them normally, 'dimmed' shows them with reduced opacity, 'hidden' makes them invisible."
         }
       }
     }
