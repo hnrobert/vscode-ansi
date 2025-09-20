@@ -32,7 +32,12 @@ jobs:
       - name: Generate Release Notes
         id: release_notes
         run: |
-          CURRENT_TAG=${GITHUB_REF#refs/tags/}
+          # Use the workflow input `version` as the current tag (ensure v-prefix)
+          if [[ "${{ github.event.inputs.version }}" == v* ]]; then
+            CURRENT_TAG=${{ github.event.inputs.version }}
+          else
+            CURRENT_TAG=v${{ github.event.inputs.version }}
+          fi
           LAST_TAG=$(git tag --sort=-creatordate | grep -v 'beta' | head -n 1)
 
           if [ -z "$LAST_TAG" ]; then
@@ -60,6 +65,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v2
@@ -86,7 +93,40 @@ jobs:
 
       - name: Extract tag name
         id: extract_tag
-        run: echo "tag=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+        run: |
+          if [[ "${{ github.event.inputs.version }}" == v* ]]; then
+            echo "tag=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "tag=v${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Bump package version and create tag with pnpm
+        if: steps.extract_tag.outputs.tag != ''
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          INPUT_VERSION="${{ github.event.inputs.version }}"
+          # Normalize semver without leading v for pnpm
+          if [[ "$INPUT_VERSION" == v* ]]; then
+            SEMVER=${INPUT_VERSION#v}
+          else
+            SEMVER=${INPUT_VERSION}
+          fi
+
+          TAG=v${SEMVER}
+
+          # Configure git author
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Skip if tag already exists
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists - skipping pnpm version"
+          else
+            pnpm version "$SEMVER"
+            git push origin HEAD
+            git push origin --tags
+          fi
 
       - name: Package the extension
         run: |
@@ -100,6 +140,8 @@ jobs:
         id: create_release
         uses: softprops/action-gh-release@v1
         with:
+          tag_name: ${{ steps.extract_tag.outputs.tag }}
+          name: ${{ steps.extract_tag.outputs.tag }}
           files: vscode-ansi-${{ steps.extract_tag.outputs.tag }}.vsix
           draft: false
           prerelease: ${{ steps.prerelease.outputs.prerelease }}
