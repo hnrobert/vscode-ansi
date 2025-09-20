@@ -10,7 +10,19 @@ ANSI Color styling and previewer for your text editor.
 
 > Forked from [iliazeus/vscode-ansi](https://github.com/iliazeus/vscode-ansi) and enhanced with more complete ANSI escape code and additional function support.
 
-<https://github.com/user-attachments/assets/486f77fc-1d21-4315-a244-3df765640669>
+## Demo
+
+### Enable / Disable
+
+![demo1](https://github.com/user-attachments/assets/fa74dd85-6a7b-42eb-8353-67231240c557)
+
+### Switch Normal / Dim / Hidden
+
+![demo2](https://github.com/user-attachments/assets/4f833bf0-5304-4a4d-9135-b50b7a9a7c92)
+
+### Apply matching file glob rules for workspace
+
+![demo3](https://github.com/user-attachments/assets/af70205f-c33b-4197-b7d1-2c3403c6082a)
 
 ## Basic usage
 
