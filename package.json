@@ -3,7 +3,7 @@
   "publisher": "HNRobert",
   "displayName": "ANSI Previewer",
   "description": "ANSI color styling and previewer for text documents",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "license": "MIT",
   "repository": {
     "url": "https://github.com/HNRobert/vscode-ansi"
