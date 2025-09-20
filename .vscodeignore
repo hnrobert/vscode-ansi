@@ -1,10 +1,22 @@
-.vscode/**
-.vscode-test/**
-out/test/**
+# 忽略源码和构建配置
 src/**
+tsconfig.json
+tsup.config.ts
+.eslintrc*
+.prettierrc*
+pnpm-lock.yaml
+pnpm-workspace.yaml
+
+# 忽略 CI/CD 文件
+.github/**
+.vscode/**
 .gitignore
-vsc-extension-quickstart.md
-**/tsconfig.json
-**/.eslintrc.json
-**/*.map
-**/*.ts
+*.yml
+
+# 忽略测试文件
+test/**
+**/*.spec.*
+**/*.test.*
+
+# 其它你不想要的
+*.md
