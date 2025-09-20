@@ -126,9 +126,7 @@
     "watch": "tsup --watch",
     "test": "node ./out/test/runTest.js",
     "test:stable": "VSCODE_TEST_VERSION=stable node ./out/test/runTest.js",
-    "test:insiders": "VSCODE_TEST_VERSION=insiders node ./out/test/runTest.js",
-    "vsce:package": "pnpm vsce package --no-dependencies",
-    "vsce:publish": "pnpm vsce publish --no-dependencies -p $VSCE_PAT"
+    "test:insiders": "VSCODE_TEST_VERSION=insiders node ./out/test/runTest.js"
   },
   "devDependencies": {
     "@types/micromatch": "^4.0.9",
