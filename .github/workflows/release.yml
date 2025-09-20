@@ -77,7 +77,7 @@ jobs:
         run: |
           corepack enable
           corepack prepare pnpm@10.13.1 --activate
-          pnpm install --frozen-lockfile
+          pnpm install --frozen-lockfile --shamefully-hoist
 
       - name: Build the extension
         run: pnpm run build
@@ -131,9 +131,9 @@ jobs:
       - name: Package the extension
         run: |
           if [[ ${{ steps.prerelease.outputs.prerelease }} == 'true' ]]; then
-            pnpm exec vsce package --pre-release -o vscode-ansi-${{ steps.extract_tag.outputs.tag }}.vsix
+            pnpm exec vsce package --pre-release --no-dependencies -o vscode-ansi-${{ steps.extract_tag.outputs.tag }}.vsix
           else
-            pnpm exec vsce package -o vscode-ansi-${{ steps.extract_tag.outputs.tag }}.vsix
+            pnpm exec vsce package --no-dependencies -o vscode-ansi-${{ steps.extract_tag.outputs.tag }}.vsix
           fi
 
       - name: Create GitHub Release
@@ -153,9 +153,9 @@ jobs:
       - name: Publish to VSCode Marketplace
         run: |
           if [[ ${{ steps.prerelease.outputs.prerelease }} == 'true' ]]; then
-            pnpm exec vsce publish --pre-release -p ${{ secrets.VSCE_PAT }}
+            pnpm exec vsce publish --pre-release --no-dependencies -p ${{ secrets.VSCE_PAT }}
           else
-            pnpm exec vsce publish -p ${{ secrets.VSCE_PAT }}
+            pnpm exec vsce publish --no-dependencies -p ${{ secrets.VSCE_PAT }}
           fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.VSCE_PAT }}
