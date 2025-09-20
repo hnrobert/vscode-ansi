@@ -1,12 +1,12 @@
-# ANSI Previewer
+# ANSI Viewer
 
 ANSI Color styling and previewer for your text editor.
 
-[![Visual Studio Marketplace](https://flat.badgen.net/vs-marketplace/i/HNRobert.vscode-ansi?icon=visualstudio)](https://marketplace.visualstudio.com/items?itemName=HNRobert.vscode-ansi)
-[![GitHub](https://flat.badgen.net/github/release/HNRobert/vscode-ansi?icon=github)](https://github.com/HNRobert/vscode-ansi)
+[![Visual Studio Marketplace](https://flat.badgen.net/vs-marketplace/i/HNRobert.ansi-viewer?icon=visualstudio)](https://marketplace.visualstudio.com/items?itemName=HNRobert.ansi-viewer)
+[![GitHub](https://flat.badgen.net/github/release/HNRobert/ansi-viewer?icon=github)](https://github.com/HNRobert/ansi-viewer)
 [![MIT License](https://flat.badgen.net/badge/license/MIT/blue)](LICENSE)
-[![Open Issues](https://flat.badgen.net/github/open-issues/HNRobert/vscode-ansi?icon=github)](https://github.com/HNRobert/vscode-ansi/issues)
-[![Closed Issues](https://flat.badgen.net/github/closed-issues/HNRobert/vscode-ansi?icon=github)](https://github.com/HNRobert/vscode-ansi/issues?q=is%3Aissue+is%3Aclosed)
+[![Open Issues](https://flat.badgen.net/github/open-issues/HNRobert/ansi-viewer?icon=github)](https://github.com/HNRobert/ansi-viewer/issues)
+[![Closed Issues](https://flat.badgen.net/github/closed-issues/HNRobert/ansi-viewer?icon=github)](https://github.com/HNRobert/ansi-viewer/issues?q=is%3Aissue+is%3Aclosed)
 
 > Forked from [iliazeus/vscode-ansi](https://github.com/iliazeus/vscode-ansi) and enhanced with more complete ANSI escape code and additional function support.
 
@@ -68,7 +68,7 @@ Basic colors and formatting:
 
   ```json
   {
-    "ansiPreviewer.autoLanguageModeFiles": [
+    "ansiViewer.autoLanguageModeFiles": [
       "**/*.ans",
       "**/*.ansi",
       "*.log", // All .log files in any directory
@@ -80,7 +80,6 @@ Basic colors and formatting:
   ```
 
   **Pattern support:**
-
   - `*.log` - matches `.log` files in any directory (same as `**/*.log`)
   - `logs/*.txt` - matches `.txt` files only in `logs` folder
   - `build/**` - matches all files in `build` directory and subdirectories

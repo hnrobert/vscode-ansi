@@ -66,10 +66,10 @@ export class AnsiDecorationProvider implements TextEditorDecorationProvider {
 
   private _provideDecorationsForAnsiLanguageType(document: TextDocument): ProviderResult<[string, Range[]][]> {
     const result = new Map<string, Range[]>();
-    
-    const config = workspace.getConfiguration("ansiPreviewer");
+
+    const config = workspace.getConfiguration("ansiViewer");
     const escapeSequenceDisplay: string = config.get("escapeSequenceDisplay", "dimmed");
-    
+
     for (const key of this._decorationTypes.keys()) {
       result.set(key, []);
     }
@@ -130,7 +130,7 @@ export class AnsiDecorationProvider implements TextEditorDecorationProvider {
           lineNumber,
           offset - totalEscapeLength,
           lineNumber,
-          offset + length - totalEscapeLength
+          offset + length - totalEscapeLength,
         );
 
         const key = JSON.stringify(style);
@@ -157,12 +157,12 @@ export class AnsiDecorationProvider implements TextEditorDecorationProvider {
   }
 
   private getEscapeSequenceDecorationType(): TextEditorDecorationType {
-    const config = workspace.getConfiguration("ansiPreviewer");
+    const config = workspace.getConfiguration("ansiViewer");
     const escapeSequenceDisplay: string = config.get("escapeSequenceDisplay", "dimmed");
-    
+
     const cacheKey = `escape_${escapeSequenceDisplay}`;
     let decorationType = this._decorationTypes.get(cacheKey);
-    
+
     if (!decorationType) {
       // 清理之前的转义序列装饰类型
       for (const [key, oldDecorationType] of this._decorationTypes.entries()) {
@@ -171,16 +171,16 @@ export class AnsiDecorationProvider implements TextEditorDecorationProvider {
           this._decorationTypes.delete(key);
         }
       }
-      
+
       switch (escapeSequenceDisplay) {
         case "normal":
           decorationType = window.createTextEditorDecorationType({});
           break;
         case "hidden":
-          decorationType = window.createTextEditorDecorationType({ 
+          decorationType = window.createTextEditorDecorationType({
             opacity: "0%",
             // 或者使用 textDecoration 来完全隐藏
-            textDecoration: "none; font-size: 0px;"
+            textDecoration: "none; font-size: 0px;",
           });
           break;
         case "dimmed":
@@ -190,7 +190,7 @@ export class AnsiDecorationProvider implements TextEditorDecorationProvider {
       }
       this._decorationTypes.set(cacheKey, decorationType);
     }
-    
+
     return decorationType;
   }
 
@@ -199,7 +199,7 @@ export class AnsiDecorationProvider implements TextEditorDecorationProvider {
     if (key.startsWith("escape_")) {
       return this.getEscapeSequenceDecorationType();
     }
-    
+
     let decorationType = this._decorationTypes.get(key);
 
     if (decorationType) {

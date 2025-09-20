@@ -21,16 +21,16 @@ import {
   registerTextEditorDecorationProvider,
 } from "./TextEditorDecorationProvider";
 
-export const extensionId = "HNRobert.vscode-ansi" as const;
+export const extensionId = "HNRobert.ansi-viewer" as const;
 
 // 全局状态栏项目
 let statusBarItem: StatusBarItem;
 
 /**
- * 检查 ANSI Previewer 插件是否启用
+ * 检查 ANSI Viewer 插件是否启用
  */
-function isAnsiPreviewerEnabled(): boolean {
-  const config = workspace.getConfiguration("ansiPreviewer");
+function isAnsiViewerEnabled(): boolean {
+  const config = workspace.getConfiguration("ansiViewer");
   return config.get("enable", true);
 }
 
@@ -39,7 +39,7 @@ function isAnsiPreviewerEnabled(): boolean {
  */
 function updateStatusBar(enabled: boolean): void {
   statusBarItem.text = enabled ? "$(check) ANSI" : "$(x) ANSI";
-  statusBarItem.tooltip = `ANSI Previewer: ${enabled ? "Enabled" : "Disabled"}`;
+  statusBarItem.tooltip = `ANSI Viewer: ${enabled ? "Enabled" : "Disabled"}`;
   statusBarItem.show();
 }
 
@@ -48,11 +48,11 @@ function updateStatusBar(enabled: boolean): void {
  */
 function shouldSetAnsiLanguageMode(document: TextDocument): boolean {
   // 首先检查插件是否启用
-  if (!isAnsiPreviewerEnabled()) {
+  if (!isAnsiViewerEnabled()) {
     return false;
   }
 
-  const config = workspace.getConfiguration("ansiPreviewer");
+  const config = workspace.getConfiguration("ansiViewer");
   const autoLanguageModeFiles: string[] = config.get("autoLanguageModeFiles", ["**/*.ans", "**/*.ansi"]);
 
   console.log(`[ANSI Extension] Checking file: ${document.fileName}`);
@@ -94,7 +94,7 @@ function shouldSetAnsiLanguageMode(document: TextDocument): boolean {
       const expandedMatch = micromatch.isMatch(relativePath, `**/${normalizedPattern}`);
 
       console.log(
-        `[ANSI Extension] Pattern ${normalizedPattern} - fileName match: ${fileNameMatch}, relativePath match: ${relativePathMatch}, expanded match: ${expandedMatch}`
+        `[ANSI Extension] Pattern ${normalizedPattern} - fileName match: ${fileNameMatch}, relativePath match: ${relativePathMatch}, expanded match: ${expandedMatch}`,
       );
 
       return fileNameMatch || relativePathMatch || expandedMatch;
@@ -137,7 +137,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
   context.subscriptions.push(statusBarItem);
 
   // 初始化状态栏
-  updateStatusBar(isAnsiPreviewerEnabled());
+  updateStatusBar(isAnsiViewerEnabled());
 
   const editorRedrawWatcher = new EditorRedrawWatcher();
   context.subscriptions.push(editorRedrawWatcher);
@@ -146,7 +146,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
   context.subscriptions.push(ansiContentPreviewProvider);
 
   context.subscriptions.push(
-    workspace.registerTextDocumentContentProvider(AnsiContentPreviewProvider.scheme, ansiContentPreviewProvider)
+    workspace.registerTextDocumentContentProvider(AnsiContentPreviewProvider.scheme, ansiContentPreviewProvider),
   );
 
   const showPreview = async (options?: TextDocumentShowOptions) => {
@@ -162,16 +162,16 @@ export async function activate(context: ExtensionContext): Promise<void> {
   };
 
   context.subscriptions.push(
-    commands.registerCommand(`${extensionId}.showPreview`, () => showPreview({ viewColumn: ViewColumn.Active }))
+    commands.registerCommand(`${extensionId}.showPreview`, () => showPreview({ viewColumn: ViewColumn.Active })),
   );
   context.subscriptions.push(
-    commands.registerCommand(`${extensionId}.showPreviewToSide`, () => showPreview({ viewColumn: ViewColumn.Beside }))
+    commands.registerCommand(`${extensionId}.showPreviewToSide`, () => showPreview({ viewColumn: ViewColumn.Beside })),
   );
 
   // 监听配置变更事件
   context.subscriptions.push(
     workspace.onDidChangeConfiguration(async (event) => {
-      if (event.affectsConfiguration("ansiPreviewer.autoLanguageModeFiles")) {
+      if (event.affectsConfiguration("ansiViewer.autoLanguageModeFiles")) {
         console.log(`[ANSI Extension] Configuration changed, re-evaluating all open documents`);
 
         // 重新检查所有打开的文档
@@ -192,7 +192,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
       }
 
       // 监听转义序列显示配置的变更
-      if (event.affectsConfiguration("ansiPreviewer.escapeSequenceDisplay")) {
+      if (event.affectsConfiguration("ansiViewer.escapeSequenceDisplay")) {
         console.log(`[ANSI Extension] Escape sequence display configuration changed, refreshing decorations`);
 
         // 触发所有 ANSI 文档的装饰刷新
@@ -203,7 +203,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
           }
         }
       }
-    })
+    }),
   ); // 监听文档打开事件，自动设置 ANSI 语言模式
   context.subscriptions.push(
     workspace.onDidOpenTextDocument(async (document: TextDocument) => {
@@ -211,7 +211,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
       if (shouldSetAnsiLanguageMode(document)) {
         await setAnsiLanguageMode(document, "document opened");
       }
-    })
+    }),
   );
 
   // 监听活动编辑器变化事件，用于捕获通过文件浏览器打开的文件
@@ -219,13 +219,13 @@ export async function activate(context: ExtensionContext): Promise<void> {
     window.onDidChangeActiveTextEditor(async (editor) => {
       if (editor) {
         console.log(
-          `[ANSI Extension] Active editor changed: ${editor.document.fileName}, language: ${editor.document.languageId}`
+          `[ANSI Extension] Active editor changed: ${editor.document.fileName}, language: ${editor.document.languageId}`,
         );
         if (shouldSetAnsiLanguageMode(editor.document)) {
           await setAnsiLanguageMode(editor.document, "active editor changed");
         }
       }
-    })
+    }),
   );
 
   const ansiDecorationProvider = new AnsiDecorationProvider();
@@ -237,16 +237,16 @@ export async function activate(context: ExtensionContext): Promise<void> {
   context.subscriptions.push(
     workspace.onDidChangeConfiguration((changedConfig) => {
       // 如果插件启用状态改变，更新状态栏
-      if (changedConfig.affectsConfiguration("ansiPreviewer.enable")) {
-        console.log("ansiPreviewer.enable changed, updating status bar");
-        updateStatusBar(isAnsiPreviewerEnabled());
+      if (changedConfig.affectsConfiguration("ansiViewer.enable")) {
+        console.log("ansiViewer.enable changed, updating status bar");
+        updateStatusBar(isAnsiViewerEnabled());
       }
 
       // 如果转义序列显示设置改变，清理装饰缓存并重新绘制
-      if (changedConfig.affectsConfiguration("ansiPreviewer.escapeSequenceDisplay")) {
+      if (changedConfig.affectsConfiguration("ansiViewer.escapeSequenceDisplay")) {
         // 只有在插件启用时才处理
-        if (isAnsiPreviewerEnabled()) {
-          console.log("ansiPreviewer.escapeSequenceDisplay changed, clearing escape sequence decorations");
+        if (isAnsiViewerEnabled()) {
+          console.log("ansiViewer.escapeSequenceDisplay changed, clearing escape sequence decorations");
           ansiDecorationProvider.clearEscapeSequenceDecorations();
 
           // 为所有 ANSI 文件重新触发装饰
@@ -257,41 +257,41 @@ export async function activate(context: ExtensionContext): Promise<void> {
           }
         }
       }
-    })
+    }),
   );
 
   context.subscriptions.push(
     editorRedrawWatcher.onEditorRedraw(async (editor) => {
       // 检查插件是否启用
-      if (!isAnsiPreviewerEnabled()) {
+      if (!isAnsiViewerEnabled()) {
         return;
       }
 
       const tokenSource = new CancellationTokenSource();
       await executeRegisteredTextEditorDecorationProviders(editor, tokenSource.token);
       tokenSource.dispose();
-    })
+    }),
   );
 
   context.subscriptions.push(
     commands.registerTextEditorCommand(`${extensionId}.insertEscapeCharacter`, (editor, edit) => {
       edit.delete(editor.selection);
       edit.insert(editor.selection.end, "\x1b");
-    })
+    }),
   );
 
   // 注册切换开关命令
   context.subscriptions.push(
     commands.registerCommand(`${extensionId}.toggleEnable`, async () => {
-      const config = workspace.getConfiguration("ansiPreviewer");
+      const config = workspace.getConfiguration("ansiViewer");
       const currentValue = config.get("enable", true);
       const newValue = !currentValue;
 
       await config.update("enable", newValue, true);
       updateStatusBar(newValue);
 
-      window.showInformationMessage(`ANSI Previewer ${newValue ? "enabled" : "disabled"}`);
-    })
+      window.showInformationMessage(`ANSI Viewer ${newValue ? "enabled" : "disabled"}`);
+    }),
   );
 
   // 检查当前已打开的文档

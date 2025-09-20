@@ -1,6 +1,6 @@
 {
-    "ansiPreviewer.escapeSequenceDisplay": "hidden",
-    "ansiPreviewer.autoLanguageModeFiles": [
+    "ansiViewer.escapeSequenceDisplay": "hidden",
+    "ansiViewer.autoLanguageModeFiles": [
         "**/*.ans",
         "**/*.ansi",
         "*.log"

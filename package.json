@@ -1,15 +1,15 @@
 {
-  "name": "vscode-ansi",
+  "name": "ansi-viewer",
   "publisher": "HNRobert",
-  "displayName": "ANSI Previewer",
+  "displayName": "ANSI Viewer",
   "description": "ANSI color styling and previewer for text documents",
   "version": "0.0.3",
   "license": "MIT",
   "repository": {
-    "url": "https://github.com/HNRobert/vscode-ansi"
+    "url": "https://github.com/HNRobert/ansi-viewer"
   },
   "bugs": {
-    "url": "https://github.com/HNRobert/vscode-ansi/issues",
+    "url": "https://github.com/HNRobert/ansi-viewer/issues",
     "email": "hnrobert@qq.com"
   },
   "packageManager": "pnpm@10.13.1",
@@ -34,28 +34,28 @@
   "contributes": {
     "commands": [
       {
-        "command": "HNRobert.vscode-ansi.showPreview",
+        "command": "HNRobert.ansi-viewer.showPreview",
         "title": "Open Preview",
         "category": "ANSI Text",
         "icon": "$(open-preview)"
       },
       {
-        "command": "HNRobert.vscode-ansi.showPreviewToSide",
+        "command": "HNRobert.ansi-viewer.showPreviewToSide",
         "title": "Open Preview to the Side",
         "category": "ANSI Text",
         "icon": "$(open-preview)"
       },
       {
-        "command": "HNRobert.vscode-ansi.toggleEnable",
-        "title": "Toggle ANSI Previewer",
+        "command": "HNRobert.ansi-viewer.toggleEnable",
+        "title": "Toggle ANSI Viewer",
         "category": "ANSI Text"
       }
     ],
     "menus": {
       "editor/title": [
         {
-          "command": "HNRobert.vscode-ansi.showPreviewToSide",
-          "alt": "HNRobert.vscode-ansi.showPreview",
+          "command": "HNRobert.ansi-viewer.showPreviewToSide",
+          "alt": "HNRobert.ansi-viewer.showPreview",
           "when": "editorLangId == ansi",
           "group": "navigation"
         }
@@ -63,13 +63,13 @@
     },
     "keybindings": [
       {
-        "command": "HNRobert.vscode-ansi.showPreview",
+        "command": "HNRobert.ansi-viewer.showPreview",
         "key": "shift+ctrl+v",
         "mac": "shift+cmd+v",
         "when": "editorLangId == ansi"
       },
       {
-        "command": "HNRobert.vscode-ansi.showPreviewToSide",
+        "command": "HNRobert.ansi-viewer.showPreviewToSide",
         "key": "ctrl+k v",
         "mac": "cmd+k v",
         "when": "editorLangId == ansi"
@@ -89,14 +89,14 @@
       }
     ],
     "configuration": {
-      "title": "ANSI Previewer",
+      "title": "ANSI Viewer",
       "properties": {
-        "ansiPreviewer.enable": {
+        "ansiViewer.enable": {
           "type": "boolean",
           "default": true,
-          "description": "Enable ANSI Previewer extension functionality"
+          "description": "Enable ANSI Viewer extension functionality"
         },
-        "ansiPreviewer.autoLanguageModeFiles": {
+        "ansiViewer.autoLanguageModeFiles": {
           "type": "array",
           "items": {
             "type": "string"
@@ -107,7 +107,7 @@
           ],
           "description": "File glob patterns for files that should automatically be set to ANSI language mode when opened. This enables ANSI escape sequence highlighting. Supports gitignore-style patterns: '*.log' matches log files in any directory, 'logs/*.txt' matches txt files in logs folder."
         },
-        "ansiPreviewer.escapeSequenceDisplay": {
+        "ansiViewer.escapeSequenceDisplay": {
           "type": "string",
           "enum": [
             "normal",

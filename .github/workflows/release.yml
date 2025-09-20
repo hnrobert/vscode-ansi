@@ -131,9 +131,9 @@ jobs:
       - name: Package the extension
         run: |
           if [[ ${{ steps.prerelease.outputs.prerelease }} == 'true' ]]; then
-            pnpm exec vsce package --pre-release --no-dependencies -o vscode-ansi-${{ steps.extract_tag.outputs.tag }}.vsix
+            pnpm exec vsce package --pre-release --no-dependencies -o ansi-viewer-${{ steps.extract_tag.outputs.tag }}.vsix
           else
-            pnpm exec vsce package --no-dependencies -o vscode-ansi-${{ steps.extract_tag.outputs.tag }}.vsix
+            pnpm exec vsce package --no-dependencies -o ansi-viewer-${{ steps.extract_tag.outputs.tag }}.vsix
           fi
 
       - name: Create GitHub Release
@@ -142,7 +142,7 @@ jobs:
         with:
           tag_name: ${{ steps.extract_tag.outputs.tag }}
           name: ${{ steps.extract_tag.outputs.tag }}
-          files: vscode-ansi-${{ steps.extract_tag.outputs.tag }}.vsix
+          files: ansi-viewer-${{ steps.extract_tag.outputs.tag }}.vsix
           draft: false
           prerelease: ${{ steps.prerelease.outputs.prerelease }}
           generate_release_notes: false
