@@ -6,13 +6,13 @@ import * as ansi from "./ansi";
 import { extensionId } from "./extension";
 import { EditorRedrawWatcher } from "./EditorRedrawWatcher";
 
-export class PrettyAnsiContentProvider implements TextDocumentContentProvider {
-  public static readonly scheme = `${extensionId}.pretty`;
+export class AnsiContentPreviewProvider implements TextDocumentContentProvider {
+  public static readonly scheme = `${extensionId}.preview`;
 
   public static toProviderUri(actualUri: Uri): Uri {
     const tabName = "Preview: " + posixPath.basename(actualUri.path);
 
-    const scheme = PrettyAnsiContentProvider.scheme;
+    const scheme = AnsiContentPreviewProvider.scheme;
     const path = encodeURIComponent(tabName);
     const query = encodeURIComponent(actualUri.toString());
 
@@ -20,7 +20,7 @@ export class PrettyAnsiContentProvider implements TextDocumentContentProvider {
   }
 
   public static toActualUri(providerUri: Uri): Uri {
-    if (providerUri.scheme !== PrettyAnsiContentProvider.scheme) {
+    if (providerUri.scheme !== AnsiContentPreviewProvider.scheme) {
       throw new Error(`wrong uri scheme: ${providerUri.scheme}`);
     }
 
@@ -43,7 +43,7 @@ export class PrettyAnsiContentProvider implements TextDocumentContentProvider {
         const actualUri = event.document.uri;
 
         if (this._watchedUris.has(actualUri.toString())) {
-          const providerUri = PrettyAnsiContentProvider.toProviderUri(actualUri);
+          const providerUri = AnsiContentPreviewProvider.toProviderUri(actualUri);
           this._onDidChange.fire(providerUri);
         }
       })
@@ -55,7 +55,7 @@ export class PrettyAnsiContentProvider implements TextDocumentContentProvider {
     this._disposables.push(
       this._fileSystemWatcher.onDidChange((actualUri) => {
         if (this._watchedUris.has(actualUri.toString())) {
-          const providerUri = PrettyAnsiContentProvider.toProviderUri(actualUri);
+          const providerUri = AnsiContentPreviewProvider.toProviderUri(actualUri);
           this._onDidChange.fire(providerUri);
         }
       })
@@ -64,7 +64,7 @@ export class PrettyAnsiContentProvider implements TextDocumentContentProvider {
     this._disposables.push(
       this._fileSystemWatcher.onDidCreate((actualUri) => {
         if (this._watchedUris.has(actualUri.toString())) {
-          const providerUri = PrettyAnsiContentProvider.toProviderUri(actualUri);
+          const providerUri = AnsiContentPreviewProvider.toProviderUri(actualUri);
           this._onDidChange.fire(providerUri);
         }
       })
@@ -79,7 +79,7 @@ export class PrettyAnsiContentProvider implements TextDocumentContentProvider {
     // when the escapes change, but the content itself remains the same.
     setImmediate(() => this._editorRedrawWatcher.forceEmitForUri(providerUri));
 
-    const actualUri = PrettyAnsiContentProvider.toActualUri(providerUri);
+    const actualUri = AnsiContentPreviewProvider.toActualUri(providerUri);
 
     this._watchedUris.add(actualUri.toString());
 

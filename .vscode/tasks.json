@@ -4,9 +4,28 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"type": "npm",
-			"script": "watch",
-			"problemMatcher": "$tsc-watch",
+			"type": "shell",
+			"label": "pnpm: watch",
+			"command": "pnpm run watch",
+			"problemMatcher": [
+				{
+					"owner": "tsup",
+					"source": "tsup",
+					"fileLocation": "autoDetect",
+					"background": {
+						"activeOnStart": true,
+						"beginsPattern": "^.*Build start.*$",
+						"endsPattern": "^.*Build success.*$"
+					},
+					"pattern": {
+						"regexp": "^(.*):(\\d+):(\\d+): error: (.*)$",
+						"file": 1,
+						"line": 2,
+						"column": 3,
+						"message": 4
+					}
+				}
+			],
 			"isBackground": true,
 			"presentation": {
 				"reveal": "never"

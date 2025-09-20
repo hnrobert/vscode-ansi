@@ -1,17 +1,18 @@
 {
   "name": "vscode-ansi",
-  "publisher": "iliazeus",
-  "displayName": "ANSI Colors",
-  "description": "ANSI color styling for text documents",
-  "version": "1.1.8",
+  "publisher": "HNRobert",
+  "displayName": "ANSI Previewer",
+  "description": "ANSI color styling and previewer for text documents",
+  "version": "1.0.0",
   "license": "MIT",
   "repository": {
-    "url": "https://github.com/iliazeus/vscode-ansi"
+    "url": "https://github.com/HNRobert/vscode-ansi"
   },
   "bugs": {
-    "url": "https://github.com/iliazeus/vscode-ansi/issues",
-    "email": "ilia.pozdnyakov@ya.ru"
+    "url": "https://github.com/HNRobert/vscode-ansi/issues",
+    "email": "hnrobert@qq.com"
   },
+  "packageManager": "pnpm@10.13.1",
   "icon": "images/icon.png",
   "engines": {
     "vscode": "^1.74.0"
@@ -26,28 +27,35 @@
     "colors",
     "logs"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "iliazeus.vscode-ansi.showPretty",
+        "command": "HNRobert.vscode-ansi.showPreview",
         "title": "Open Preview",
         "category": "ANSI Text",
         "icon": "$(open-preview)"
       },
       {
-        "command": "iliazeus.vscode-ansi.showPrettyToSide",
+        "command": "HNRobert.vscode-ansi.showPreviewToSide",
         "title": "Open Preview to the Side",
         "category": "ANSI Text",
         "icon": "$(open-preview)"
+      },
+      {
+        "command": "HNRobert.vscode-ansi.toggleEnable",
+        "title": "Toggle ANSI Previewer",
+        "category": "ANSI Text"
       }
     ],
     "menus": {
       "editor/title": [
         {
-          "command": "iliazeus.vscode-ansi.showPrettyToSide",
-          "alt": "iliazeus.vscode-ansi.showPretty",
+          "command": "HNRobert.vscode-ansi.showPreviewToSide",
+          "alt": "HNRobert.vscode-ansi.showPreview",
           "when": "editorLangId == ansi",
           "group": "navigation"
         }
@@ -55,13 +63,13 @@
     },
     "keybindings": [
       {
-        "command": "iliazeus.vscode-ansi.showPretty",
+        "command": "HNRobert.vscode-ansi.showPreview",
         "key": "shift+ctrl+v",
         "mac": "shift+cmd+v",
         "when": "editorLangId == ansi"
       },
       {
-        "command": "iliazeus.vscode-ansi.showPrettyToSide",
+        "command": "HNRobert.vscode-ansi.showPreviewToSide",
         "key": "ctrl+k v",
         "mac": "cmd+k v",
         "when": "editorLangId == ansi"
@@ -79,31 +87,65 @@
         ],
         "configuration": "./ansi.language-configuration.json"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "ANSI Previewer",
+      "properties": {
+        "ansiPreviewer.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable ANSI Previewer extension functionality"
+        },
+        "ansiPreviewer.autoLanguageModeFiles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "**/*.ans",
+            "**/*.ansi"
+          ],
+          "description": "File glob patterns for files that should automatically be set to ANSI language mode when opened. This enables ANSI escape sequence highlighting. Supports gitignore-style patterns: '*.log' matches log files in any directory, 'logs/*.txt' matches txt files in logs folder."
+        },
+        "ansiPreviewer.escapeSequenceDisplay": {
+          "type": "string",
+          "enum": [
+            "normal",
+            "dimmed",
+            "hidden"
+          ],
+          "default": "dimmed",
+          "description": "How to display ANSI escape sequences in the editor. 'normal' shows them normally, 'dimmed' shows them with reduced opacity, 'hidden' makes them invisible."
+        }
+      }
+    }
   },
   "scripts": {
-    "vscode:prepublish": "yarn run compile",
-    "compile": "tsc -p ./",
+    "build": "tsup",
     "lint": "eslint src --ext ts",
-    "watch": "tsc -watch -p ./",
-    "pretest": "yarn run compile && yarn run lint",
+    "watch": "tsup --watch",
     "test": "node ./out/test/runTest.js",
-    "deploy": "vsce publish --yarn"
+    "test:stable": "VSCODE_TEST_VERSION=stable node ./out/test/runTest.js",
+    "test:insiders": "VSCODE_TEST_VERSION=insiders node ./out/test/runTest.js"
   },
   "devDependencies": {
-    "@types/glob": "^7.1.1",
-    "@types/mocha": "^7.0.2",
-    "@types/node": "^13.11.0",
-    "@types/vscode": "^1.45.0",
-    "@typescript-eslint/eslint-plugin": "^5.53.0",
-    "@typescript-eslint/parser": "^5.53.0",
-    "@vscode/vsce": "^2.18.0",
-    "eslint": "^8.35.0",
-    "glob": "^7.1.6",
-    "mocha": "^7.1.1",
-    "prettier": "^2.8.4",
-    "typescript": "^4.9.5",
-    "vscode-test": "^1.3.0"
+    "@types/micromatch": "^4.0.9",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^24.5.2",
+    "@types/vscode": "^1.104.0",
+    "@typescript-eslint/eslint-plugin": "^8.44.0",
+    "@typescript-eslint/parser": "^8.44.0",
+    "@vscode/test-electron": "^2.5.2",
+    "@vscode/vsce": "^3.6.0",
+    "eslint": "^9.36.0",
+    "glob": "^11.0.3",
+    "mocha": "^11.7.2",
+    "prettier": "^3.6.2",
+    "tsup": "^8.5.0",
+    "typescript": "~5.9.2",
+    "vscode-test": "npm:@vscode/test-electron@^2.5.2"
   },
-  "dependencies": {}
+  "dependencies": {
+    "micromatch": "^4.0.8"
+  }
 }
