@@ -10,7 +10,7 @@ ANSI Color styling and previewer for your text editor.
 
 > Forked from [iliazeus/vscode-ansi](https://github.com/iliazeus/vscode-ansi) and enhanced with more complete ANSI escape code and additional function support.
 
-![Settings-Demo](images/settings-demo.mov)
+<https://github.com/user-attachments/assets/486f77fc-1d21-4315-a244-3df765640669>
 
 ## Basic usage
 
