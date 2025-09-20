@@ -1,4 +1,4 @@
-# ANSI Colors
+# ANSI Previewer
 
 ANSI Color styling and previewer for your text editor.
 
@@ -7,6 +7,10 @@ ANSI Color styling and previewer for your text editor.
 [![MIT License](https://flat.badgen.net/badge/license/MIT/blue)](LICENSE)
 [![Open Issues](https://flat.badgen.net/github/open-issues/HNRobert/vscode-ansi?icon=github)](https://github.com/HNRobert/vscode-ansi/issues)
 [![Closed Issues](https://flat.badgen.net/github/closed-issues/HNRobert/vscode-ansi?icon=github)](https://github.com/HNRobert/vscode-ansi/issues?q=is%3Aissue+is%3Aclosed)
+
+> Forked from [iliazeus/vscode-ansi](https://github.com/iliazeus/vscode-ansi) and enhanced with more complete ANSI escape code and additional function support.
+
+![Settings-Demo](images/settings-demo.mov)
 
 ## Basic usage
 
@@ -25,44 +29,6 @@ Clicking the preview icon in the editor title will open the preview in a new tab
 The extension fetches the colors from the current theme and aims to look as good as the built-in terminal.
 
 ![ANSI Text preview; various themes](images/screenshot-themes.gif)
-
-## FAQ
-
-- How do I enable this extension for files other than `.ans` and `.ansi`?
-
-  This can be done using the VS Code "language mode" feature. For example, to enable it for all `.log` files, open a `.log` file, then do `F1 - Change Language Mode - Configure File Association for '.log' - ANSI Text`.
-
-- Can files automatically be set to ANSI language mode?
-
-  **Yes!** You can configure automatic ANSI language mode for files matching specific glob patterns. By default, `.ans` and `.ansi` files will automatically be set to ANSI language mode when opened, enabling escape sequence highlighting.
-
-  You can customize this behavior in VS Code settings using gitignore-style patterns:
-
-  ```json
-  {
-    "ansiPreviewer.autoLanguageModeFiles": [
-      "**/*.ans",
-      "**/*.ansi",
-      "*.log", // All .log files in any directory
-      "logs/*.txt", // .txt files in logs folder
-      "output.txt", // Specific filename
-      "build/**" // All files in build directory
-    ]
-  }
-  ```
-
-  **Pattern support:**
-
-  - `*.log` - matches `.log` files in any directory (same as `**/*.log`)
-  - `logs/*.txt` - matches `.txt` files only in `logs` folder
-  - `build/**` - matches all files in `build` directory and subdirectories
-  - `output.txt` - matches files named exactly `output.txt`
-
-  Set it to an empty array `[]` to disable automatic language mode setting entirely.
-
-- Can the "preview mode" be opened automatically?
-
-  No, automatic preview opening has been removed. You can still manually open previews using the commands or editor title buttons.
 
 ## Supported ANSI escape codes
 
@@ -91,3 +57,33 @@ Basic colors and formatting:
 24-bit colors:
 
 ![24-bit colors](images/screenshot-24bitColor-darkPlus.png)
+
+## FAQ
+
+- Can files automatically be set to ANSI language mode?
+
+  You can configure automatic ANSI language mode for files matching specific glob patterns. By default, `.ans` and `.ansi` files will automatically be set to ANSI language mode when opened, enabling escape sequence highlighting.
+
+  You can customize this behaviour in VS Code settings using gitignore-style patterns:
+
+  ```json
+  {
+    "ansiPreviewer.autoLanguageModeFiles": [
+      "**/*.ans",
+      "**/*.ansi",
+      "*.log", // All .log files in any directory
+      "logs/*.txt", // .txt files in logs folder
+      "output.txt", // Specific filename
+      "build/**" // All files in build directory
+    ]
+  }
+  ```
+
+  **Pattern support:**
+
+  - `*.log` - matches `.log` files in any directory (same as `**/*.log`)
+  - `logs/*.txt` - matches `.txt` files only in `logs` folder
+  - `build/**` - matches all files in `build` directory and subdirectories
+  - `output.txt` - matches files named exactly `output.txt`
+
+  Set it to an empty array `[]` to disable automatic language mode setting entirely.
