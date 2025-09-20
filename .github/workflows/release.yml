@@ -66,14 +66,14 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Install dependencies
-        run: npm install
-
-      - name: Install vsce
-        run: npm install -g @vscode/vsce
+      - name: Prepare pnpm and install dependencies
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.13.1 --activate
+          pnpm install --frozen-lockfile
 
       - name: Build the extension
-        run: npm run compile
+        run: pnpm run build
 
       - name: Determine if prerelease
         id: prerelease
@@ -91,9 +91,9 @@ jobs:
       - name: Package the extension
         run: |
           if [[ ${{ steps.prerelease.outputs.prerelease }} == 'true' ]]; then
-            vsce package --pre-release -o vscode-ansi-${{ steps.extract_tag.outputs.tag }}.vsix
+            pnpm exec vsce package --pre-release -o vscode-ansi-${{ steps.extract_tag.outputs.tag }}.vsix
           else
-            vsce package -o vscode-ansi-${{ steps.extract_tag.outputs.tag }}.vsix
+            pnpm exec vsce package -o vscode-ansi-${{ steps.extract_tag.outputs.tag }}.vsix
           fi
 
       - name: Create GitHub Release
@@ -111,9 +111,9 @@ jobs:
       - name: Publish to VSCode Marketplace
         run: |
           if [[ ${{ steps.prerelease.outputs.prerelease }} == 'true' ]]; then
-            vsce publish --pre-release -p ${{ secrets.VSCE_PAT }}
+            pnpm exec vsce publish --pre-release -p ${{ secrets.VSCE_PAT }}
           else
-            vsce publish -p ${{ secrets.VSCE_PAT }}
+            pnpm exec vsce publish -p ${{ secrets.VSCE_PAT }}
           fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.VSCE_PAT }}
