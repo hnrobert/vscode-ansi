@@ -96,17 +96,6 @@
             "**/*.ansi"
           ],
           "description": "File glob patterns for files that should automatically be set to ANSI language mode when opened. This enables ANSI escape sequence highlighting. Supports gitignore-style patterns: '*.log' matches log files in any directory, 'logs/*.txt' matches txt files in logs folder."
-        },
-        "ansiPreviewer.autoPreviewFiles": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "default": [
-            "**/*.ans",
-            "**/*.ansi"
-          ],
-          "description": "File glob patterns for files that should automatically be set to ANSI language mode when opened. This enables ANSI escape sequence highlighting. Supports gitignore-style patterns: '*.log' matches log files in any directory, 'logs/*.txt' matches txt files in logs folder. (Legacy setting name, use autoLanguageModeFiles instead)"
         }
       }
     }

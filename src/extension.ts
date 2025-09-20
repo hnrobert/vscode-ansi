@@ -26,11 +26,7 @@ export const extensionId = "HNRobert.vscode-ansi" as const;
  */
 function shouldSetAnsiLanguageMode(document: TextDocument): boolean {
   const config = workspace.getConfiguration("ansiPreviewer");
-  // 先尝试读取新的配置名，如果不存在则回退到旧的配置名以保持兼容性
-  let autoLanguageModeFiles: string[] = config.get("autoLanguageModeFiles", []);
-  if (autoLanguageModeFiles.length === 0) {
-    autoLanguageModeFiles = config.get("autoPreviewFiles", ["**/*.ans", "**/*.ansi"]);
-  }
+  const autoLanguageModeFiles: string[] = config.get("autoLanguageModeFiles", ["**/*.ans", "**/*.ansi"]);
 
   console.log(`[ANSI Extension] Checking file: ${document.fileName}`);
   console.log(`[ANSI Extension] Config patterns:`, autoLanguageModeFiles);
@@ -87,6 +83,24 @@ function shouldSetAnsiLanguageMode(document: TextDocument): boolean {
   return shouldSet;
 }
 
+/**
+ * 为文档设置 ANSI 语言模式
+ */
+async function setAnsiLanguageMode(document: TextDocument, context: string): Promise<void> {
+  if (document.languageId === "ansi") {
+    console.log(`[ANSI Extension] Document ${document.fileName} is already in ANSI mode`);
+    return;
+  }
+
+  console.log(`[ANSI Extension] Setting language mode to ANSI for ${context}: ${document.fileName}`);
+  try {
+    await languages.setTextDocumentLanguage(document, "ansi");
+    console.log(`[ANSI Extension] Successfully set language mode to ANSI for ${context}`);
+  } catch (error) {
+    console.error(`[ANSI Extension] Error setting language mode for ${context}:`, error);
+  }
+}
+
 export async function activate(context: ExtensionContext): Promise<void> {
   console.log(`[ANSI Extension] Extension activated`);
 
@@ -119,19 +133,37 @@ export async function activate(context: ExtensionContext): Promise<void> {
     commands.registerCommand(`${extensionId}.showPreviewToSide`, () => showPreview({ viewColumn: ViewColumn.Beside }))
   );
 
+  // 监听配置变更事件
+  context.subscriptions.push(
+    workspace.onDidChangeConfiguration(async (event) => {
+      if (event.affectsConfiguration("ansiPreviewer.autoLanguageModeFiles")) {
+        console.log(`[ANSI Extension] Configuration changed, re-evaluating all open documents`);
+
+        // 重新检查所有打开的文档
+        for (const editor of window.visibleTextEditors) {
+          const document = editor.document;
+          if (shouldSetAnsiLanguageMode(document)) {
+            await setAnsiLanguageMode(document, "config changed - visible document");
+          }
+        }
+
+        // 也检查当前活动编辑器
+        if (window.activeTextEditor) {
+          const document = window.activeTextEditor.document;
+          if (shouldSetAnsiLanguageMode(document)) {
+            await setAnsiLanguageMode(document, "config changed - active document");
+          }
+        }
+      }
+    })
+  );
+
   // 监听文档打开事件，自动设置 ANSI 语言模式
   context.subscriptions.push(
     workspace.onDidOpenTextDocument(async (document: TextDocument) => {
       console.log(`[ANSI Extension] Document opened: ${document.fileName}, language: ${document.languageId}`);
-      if (shouldSetAnsiLanguageMode(document) && document.languageId !== "ansi") {
-        console.log(`[ANSI Extension] Setting language mode to ANSI for: ${document.fileName}`);
-        try {
-          // 使用 languages.setTextDocumentLanguage API
-          await languages.setTextDocumentLanguage(document, "ansi");
-          console.log(`[ANSI Extension] Successfully set language mode to ANSI`);
-        } catch (error) {
-          console.error(`[ANSI Extension] Error setting language mode:`, error);
-        }
+      if (shouldSetAnsiLanguageMode(document)) {
+        await setAnsiLanguageMode(document, "document opened");
       }
     })
   );
@@ -143,15 +175,8 @@ export async function activate(context: ExtensionContext): Promise<void> {
         console.log(
           `[ANSI Extension] Active editor changed: ${editor.document.fileName}, language: ${editor.document.languageId}`
         );
-        if (shouldSetAnsiLanguageMode(editor.document) && editor.document.languageId !== "ansi") {
-          console.log(`[ANSI Extension] Setting language mode to ANSI for active editor: ${editor.document.fileName}`);
-          try {
-            // 使用 languages.setTextDocumentLanguage API
-            await languages.setTextDocumentLanguage(editor.document, "ansi");
-            console.log(`[ANSI Extension] Successfully set language mode to ANSI for active editor`);
-          } catch (error) {
-            console.error(`[ANSI Extension] Error setting language mode for active editor:`, error);
-          }
+        if (shouldSetAnsiLanguageMode(editor.document)) {
+          await setAnsiLanguageMode(editor.document, "active editor changed");
         }
       }
     })
@@ -182,28 +207,16 @@ export async function activate(context: ExtensionContext): Promise<void> {
   if (window.activeTextEditor) {
     console.log(`[ANSI Extension] Found active editor: ${window.activeTextEditor.document.fileName}`);
     const document = window.activeTextEditor.document;
-    if (shouldSetAnsiLanguageMode(document) && document.languageId !== "ansi") {
-      console.log(`[ANSI Extension] Setting language mode for already opened document: ${document.fileName}`);
-      try {
-        await languages.setTextDocumentLanguage(document, "ansi");
-        console.log(`[ANSI Extension] Successfully set language mode for already opened document`);
-      } catch (error) {
-        console.error(`[ANSI Extension] Error setting language mode for already opened document:`, error);
-      }
+    if (shouldSetAnsiLanguageMode(document)) {
+      await setAnsiLanguageMode(document, "already opened document");
     }
   }
 
   // 检查所有可见编辑器中的文档
   for (const editor of window.visibleTextEditors) {
     const document = editor.document;
-    if (shouldSetAnsiLanguageMode(document) && document.languageId !== "ansi") {
-      console.log(`[ANSI Extension] Setting language mode for visible document: ${document.fileName}`);
-      try {
-        await languages.setTextDocumentLanguage(document, "ansi");
-        console.log(`[ANSI Extension] Successfully set language mode for visible document`);
-      } catch (error) {
-        console.error(`[ANSI Extension] Error setting language mode for visible document:`, error);
-      }
+    if (shouldSetAnsiLanguageMode(document)) {
+      await setAnsiLanguageMode(document, "visible document");
     }
   }
 }
