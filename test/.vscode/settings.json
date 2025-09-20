@@ -1,0 +1,7 @@
+{
+    "ansiPreviewer.autoLanguageModeFiles": [
+        "**/*.ans",
+        "**/*.ansi",
+        "*.log"
+    ]
+}

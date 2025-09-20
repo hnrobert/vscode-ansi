@@ -27,7 +27,9 @@
     "colors",
     "logs"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
@@ -80,7 +82,34 @@
         ],
         "configuration": "./ansi.language-configuration.json"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "ANSI Previewer",
+      "properties": {
+        "ansiPreviewer.autoLanguageModeFiles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "**/*.ans",
+            "**/*.ansi"
+          ],
+          "description": "File glob patterns for files that should automatically be set to ANSI language mode when opened. This enables ANSI escape sequence highlighting. Supports gitignore-style patterns: '*.log' matches log files in any directory, 'logs/*.txt' matches txt files in logs folder."
+        },
+        "ansiPreviewer.autoPreviewFiles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "**/*.ans",
+            "**/*.ansi"
+          ],
+          "description": "File glob patterns for files that should automatically be set to ANSI language mode when opened. This enables ANSI escape sequence highlighting. Supports gitignore-style patterns: '*.log' matches log files in any directory, 'logs/*.txt' matches txt files in logs folder. (Legacy setting name, use autoLanguageModeFiles instead)"
+        }
+      }
+    }
   },
   "scripts": {
     "build": "tsup",
@@ -91,21 +120,23 @@
     "test:insiders": "VSCODE_TEST_VERSION=insiders node ./out/test/runTest.js"
   },
   "devDependencies": {
-    "@types/glob": "^7.1.1",
-    "@types/mocha": "^7.0.2",
-    "@types/node": "^13.11.0",
-    "@types/vscode": "^1.45.0",
-    "@typescript-eslint/eslint-plugin": "^7.18.0",
-    "@typescript-eslint/parser": "^7.18.0",
-    "@vscode/test-electron": "^2.4.0",
-    "@vscode/vsce": "^2.18.0",
-    "eslint": "^8.35.0",
-    "glob": "^7.1.6",
-    "mocha": "^7.1.1",
-    "prettier": "^2.8.4",
-    "tsup": "^8.0.1",
-    "typescript": "~5.1.6",
-    "vscode-test": "^1.3.0"
+    "@types/micromatch": "^4.0.9",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^24.5.2",
+    "@types/vscode": "^1.104.0",
+    "@typescript-eslint/eslint-plugin": "^8.44.0",
+    "@typescript-eslint/parser": "^8.44.0",
+    "@vscode/test-electron": "^2.5.2",
+    "@vscode/vsce": "^3.6.0",
+    "eslint": "^9.36.0",
+    "glob": "^11.0.3",
+    "mocha": "^11.7.2",
+    "prettier": "^3.6.2",
+    "tsup": "^8.5.0",
+    "typescript": "~5.9.2",
+    "vscode-test": "npm:@vscode/test-electron@^2.5.2"
   },
-  "dependencies": {}
+  "dependencies": {
+    "micromatch": "^4.0.8"
+  }
 }

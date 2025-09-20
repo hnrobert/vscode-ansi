@@ -32,11 +32,37 @@ The extension fetches the colors from the current theme and aims to look as good
 
   This can be done using the VS Code "language mode" feature. For example, to enable it for all `.log` files, open a `.log` file, then do `F1 - Change Language Mode - Configure File Association for '.log' - ANSI Text`.
 
+- Can files automatically be set to ANSI language mode?
+
+  **Yes!** You can configure automatic ANSI language mode for files matching specific glob patterns. By default, `.ans` and `.ansi` files will automatically be set to ANSI language mode when opened, enabling escape sequence highlighting.
+
+  You can customize this behavior in VS Code settings using gitignore-style patterns:
+
+  ```json
+  {
+    "ansiPreviewer.autoLanguageModeFiles": [
+      "**/*.ans",
+      "**/*.ansi",
+      "*.log", // All .log files in any directory
+      "logs/*.txt", // .txt files in logs folder
+      "output.txt", // Specific filename
+      "build/**" // All files in build directory
+    ]
+  }
+  ```
+
+  **Pattern support:**
+
+  - `*.log` - matches `.log` files in any directory (same as `**/*.log`)
+  - `logs/*.txt` - matches `.txt` files only in `logs` folder
+  - `build/**` - matches all files in `build` directory and subdirectories
+  - `output.txt` - matches files named exactly `output.txt`
+
+  Set it to an empty array `[]` to disable automatic language mode setting entirely.
+
 - Can the "preview mode" be opened automatically?
 
-  No, it can't, not with the way the extension is currently designed, at least.
-
-  `vscode-ansi` uses VSCode's built-in text editors in readonly mode (via [`TextDocumentContentProvider`](https://code.visualstudio.com/api/references/vscode-api#TextDocumentContentProvider)) for preview display. The only custom editors allowed to open files "by default" (e.g. by double-click) are [webview-based custom editors](https://code.visualstudio.com/api/extension-guides/custom-editors). But building such an editor means reimplementing all the default functionality from scratch - navigation, searching, line wrap, interaction with other extensions (e.g. spell check).
+  No, automatic preview opening has been removed. You can still manually open previews using the commands or editor title buttons.
 
 ## Supported ANSI escape codes
 
