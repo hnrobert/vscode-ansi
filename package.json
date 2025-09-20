@@ -3,7 +3,7 @@
   "publisher": "HNRobert",
   "displayName": "ANSI Viewer",
   "description": "ANSI color styling and previewer for text documents",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "license": "MIT",
   "repository": {
     "url": "https://github.com/HNRobert/ansi-viewer"
