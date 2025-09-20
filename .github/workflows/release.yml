@@ -1,0 +1,119 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version (e.g. 1.2.3)"
+        required: true
+        type: string
+      beta:
+        description: "prerelease (beta)"
+        required: true
+        default: false
+        type: boolean
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      release_notes: ${{ steps.release_notes.outputs.NOTES }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "22"
+
+      - name: Generate Release Notes
+        id: release_notes
+        run: |
+          CURRENT_TAG=${GITHUB_REF#refs/tags/}
+          LAST_TAG=$(git tag --sort=-creatordate | grep -v 'beta' | head -n 1)
+
+          if [ -z "$LAST_TAG" ]; then
+            COMMITS=$(git log --pretty=format:"- %s" --no-merges)
+            COMPARE_LINK="https://github.com/${{ github.repository }}/commits/${CURRENT_TAG}"
+          else
+            COMMITS=$(git log ${LAST_TAG}..HEAD --pretty=format:"- %s" --no-merges)
+            COMPARE_LINK="https://github.com/${{ github.repository }}/compare/${LAST_TAG}...${CURRENT_TAG}"
+          fi
+
+          echo "NOTES<<EOF" >> $GITHUB_OUTPUT
+          echo "## Release ${CURRENT_TAG}" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo "Changes in this release:" >> $GITHUB_OUTPUT
+          echo "$COMMITS" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo "---" >> $GITHUB_OUTPUT
+          echo "See full changelogs: [${LAST_TAG}...${CURRENT_TAG}](${COMPARE_LINK})" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+  build-and-release:
+    runs-on: ubuntu-latest
+    needs: setup
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install vsce
+        run: npm install -g @vscode/vsce
+
+      - name: Build the extension
+        run: npm run compile
+
+      - name: Determine if prerelease
+        id: prerelease
+        run: |
+          if [ "${{ github.event.inputs.beta }}" = "true" ] || [ "${{ github.event.inputs.beta }}" = "True" ]; then
+            echo "prerelease=true" >> $GITHUB_OUTPUT
+          else
+            echo "prerelease=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Extract tag name
+        id: extract_tag
+        run: echo "tag=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+
+      - name: Package the extension
+        run: |
+          if [[ ${{ steps.prerelease.outputs.prerelease }} == 'true' ]]; then
+            vsce package --pre-release -o vscode-ansi-${{ steps.extract_tag.outputs.tag }}.vsix
+          else
+            vsce package -o vscode-ansi-${{ steps.extract_tag.outputs.tag }}.vsix
+          fi
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: vscode-ansi-${{ steps.extract_tag.outputs.tag }}.vsix
+          draft: false
+          prerelease: ${{ steps.prerelease.outputs.prerelease }}
+          generate_release_notes: false
+          body: ${{ needs.setup.outputs.release_notes }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish to VSCode Marketplace
+        run: |
+          if [[ ${{ steps.prerelease.outputs.prerelease }} == 'true' ]]; then
+            vsce publish --pre-release -p ${{ secrets.VSCE_PAT }}
+          else
+            vsce publish -p ${{ secrets.VSCE_PAT }}
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.VSCE_PAT }}
